@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Participant Lookup</title>
+    <meta name="description" content="Self-service portal for event participants to find their bus assignment">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .slide-in {
+            animation: slideIn 0.4s ease-out forwards;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-slate-100 min-h-screen flex items-center justify-center p-4">
+    <div id="app" class="w-full max-w-md bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-slate-200">
+        <div class="bg-[#10B981] p-8 text-white relative">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-2xl font-bold tracking-tight">Event Portal</h1>
+                    <p class="text-emerald-100 opacity-80 text-sm">Cloud-Synced Logistics</p>
+                </div>
+                <div id="admin-trigger" onclick="toggleAdmin()"
+                    class="cursor-pointer hover:opacity-80 transition-opacity">
+                    <i data-lucide="bus" class="w-10 h-10 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+        <div class="p-8" id="content-area">
+            <div id="loading-view" class="flex flex-col items-center justify-center py-12 space-y-4">
+                <div class="w-12 h-12 border-4 border-[#10B981] border-t-transparent rounded-full animate-spin"></div>
+                <p class="text-slate-400 font-medium text-sm">Syncing with cloud...</p>
+            </div>
+            <div id="admin-view" class="hidden slide-in space-y-6">
+                <div class="text-center">
+                    <h2 class="text-xl font-bold text-slate-800">Admin Upload</h2>
+                </div>
+                <div class="border-2 border-dashed border-slate-200 rounded-2xl p-8 text-center bg-slate-50 hover:border-[#10B981] cursor-pointer transition-colors"
+                    id="drop-zone">
+                    <i data-lucide="upload-cloud" class="w-10 h-10 mx-auto text-slate-400 mb-2"></i>
+                    <p class="text-xs text-slate-500">Click to upload Participant CSV</p>
+                    <input type="file" id="csv-upload" accept=".csv" class="hidden">
+                </div>
+                <div id="upload-msg" class="text-center text-xs font-bold uppercase tracking-widest"></div>
+                <button onclick="toggleAdmin()"
+                    class="w-full py-4 bg-slate-800 text-white rounded-2xl font-bold text-sm hover:bg-slate-700 transition-colors">Exit
+                    Admin Mode</button>
+            </div>
+            <div id="input-view" class="hidden space-y-6">
+                <div class="text-center space-y-2">
+                    <h2 class="text-2xl font-extrabold text-slate-800">Welcome</h2>
+                    <p class="text-slate-500">Enter your info to see your assignment.</p>
+                </div>
+                <div class="space-y-4">
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Full Name</label>
+                        <div class="relative">
+                            <i data-lucide="user"
+                                class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"></i>
+                            <input type="text" id="name-input" placeholder="John Doe"
+                                class="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/20 transition-all">
+                        </div>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Phone
+                            Number</label>
+                        <div class="relative">
+                            <i data-lucide="phone"
+                                class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"></i>
+                            <input type="tel" id="phone-input" placeholder="01012345678"
+                                class="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/20 transition-all">
+                        </div>
+                    </div>
+                    <button onclick="handleLookup()" id="find-bus-btn"
+                        class="w-full bg-[#10B981] text-white font-bold py-5 rounded-2xl shadow-lg hover:bg-[#006629] active:scale-[0.98] transition-all">Find
+                        My Bus</button>
+                </div>
+            </div>
+            <div id="result-view" class="hidden slide-in space-y-8">
+                <div class="flex flex-col items-center text-center">
+                    <div
+                        class="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center text-[#10B981] mb-4">
+                        <i data-lucide="check-circle-2" class="w-10 h-10"></i>
+                    </div>
+                    <h2 class="text-3xl font-black text-slate-800">Confirmed!</h2>
+                    <p class="text-slate-500">Welcome, <span id="res-name"
+                            class="font-bold text-slate-800 underline decoration-[#10B981]">User</span></p>
+                </div>
+                <div class="bg-slate-50 border-2 border-[#10B981] rounded-[2rem] p-8 space-y-6">
+                    <div class="flex justify-between items-start border-b border-slate-200 pb-4">
+                        <div>
+                            <p class="text-[10px] uppercase text-slate-400 font-bold tracking-wider">Affiliation</p>
+                            <p id="res-aff" class="text-lg font-bold text-slate-700">-</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-[10px] uppercase text-slate-400 font-bold tracking-wider">Departure</p>
+                            <p id="res-time" class="text-lg font-bold text-slate-700">-</p>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-[10px] uppercase mb-1 text-slate-400 font-bold tracking-wider">Bus Assignment</p>
+                        <div id="res-bus" class="text-4xl font-black text-[#10B981]">TBD</div>
+                    </div>
+                </div>
+                <button onclick="resetApp()"
+                    class="w-full py-2 text-slate-400 font-bold text-sm hover:text-slate-600 transition-colors">New
+                    Search</button>
+            </div>
+            <div id="error-view" class="hidden slide-in text-center space-y-6">
+                <div class="w-20 h-20 bg-rose-100 rounded-full flex items-center justify-center mx-auto"><i
+                        data-lucide="alert-circle" class="w-10 h-10 text-rose-500"></i></div>
+                <h2 class="text-2xl font-extrabold text-slate-800">No Record Found</h2>
+                <p class="text-slate-500">Please check your name and phone number.</p>
+                <button onclick="resetApp()"
+                    class="w-full bg-slate-800 text-white font-bold py-5 rounded-2xl hover:bg-slate-700 transition-colors">Try
+                    Again</button>
+            </div>
+        </div>
+        <div class="bg-slate-50 border-t border-slate-100 py-6 text-center cursor-default select-none">
+            <p class="text-[9px] text-slate-300 uppercase tracking-[0.3em] font-black">Secure Cloud Portal v4.1</p>
+        </div>
+    </div>
+    <!-- Password Modal -->
+    <div id="password-modal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-xs shadow-2xl">
+            <h3 class="text-lg font-bold text-slate-800 mb-4">Admin Access</h3>
+            <input type="password" id="password-input" placeholder="Enter password"
+                class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl mb-2 outline-none focus:border-[#10B981]">
+            <p id="password-error" class="hidden text-rose-500 text-sm mb-2 font-medium">Incorrect password</p>
+            <div class="flex gap-3">
+                <button onclick="cancelPassword()"
+                    class="flex-1 py-3 bg-slate-200 text-slate-700 rounded-xl font-bold">Cancel</button>
+                <button onclick="submitPassword()"
+                    class="flex-1 py-3 bg-[#10B981] text-white rounded-xl font-bold">Enter</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Admin password and toggle function (before module loads)
+        const ADMIN_PASSWORD = 'admin123';
+
+        function toggleAdmin() {
+            const adminView = document.getElementById('admin-view');
+
+            // If already in admin mode, just exit
+            if (adminView && !adminView.classList.contains('hidden')) {
+                window.showView ? window.showView('input-view') : location.reload();
+                return;
+            }
+
+            // Show password modal
+            document.getElementById('password-modal').classList.remove('hidden');
+            document.getElementById('password-input').value = '';
+            document.getElementById('password-input').focus();
+        }
+
+        function submitPassword() {
+            const password = document.getElementById('password-input').value;
+            const errorEl = document.getElementById('password-error');
+
+            if (password !== ADMIN_PASSWORD) {
+                errorEl.classList.remove('hidden');
+                const inputEl = document.getElementById('password-input');
+                inputEl.classList.add('border-rose-500');
+                inputEl.value = '';
+                inputEl.focus();
+                return;
+            }
+
+            // Hide modal and error
+            document.getElementById('password-modal').classList.add('hidden');
+            errorEl.classList.add('hidden');
+
+            // Show admin view
+            if (window.showView) {
+                window.showView('admin-view');
+            } else {
+                document.querySelectorAll('#loading-view, #input-view, #result-view, #error-view').forEach(el => el.classList.add('hidden'));
+                document.getElementById('admin-view').classList.remove('hidden');
+            }
+        }
+
+        function cancelPassword() {
+            document.getElementById('password-modal').classList.add('hidden');
+        }
+
+        // Allow Enter key to submit password
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('password-input').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') submitPassword();
+            });
+        });
+    </script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Firebase configuration
+        const firebaseConfig = typeof __firebase_config !== 'undefined'
+            ? JSON.parse(__firebase_config)
+            : {
+                apiKey: "AIzaSyAnp90bFTz6_E7r0tBPAYKu58GbwQqto0I",
+                authDomain: "buslookup-5fd0d.firebaseapp.com",
+                projectId: "buslookup-5fd0d",
+                storageBucket: "buslookup-5fd0d.firebasestorage.app",
+                messagingSenderId: "981605729788",
+                appId: "1:981605729788:web:942a2188f3985433659e79",
+                measurementId: "G-SXL79P93YD"
+            };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+        let PARTICIPANTS = [];
+        let currentUser = null;
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                await loadGlobalData();
+                showView('input-view');
+            } else {
+                await signInAnonymously(auth);
+            }
+        });
+
+        async function loadGlobalData() {
+            if (!currentUser) return;
+            try {
+                const dataCol = collection(db, 'artifacts', appId, 'public', 'data', 'participants');
+                const snapshot = await getDocs(dataCol);
+                PARTICIPANTS = snapshot.docs.map(d => d.data());
+            } catch (error) {
+                console.log('Cloud sync not available, running in local mode');
+                showView('input-view');
+            }
+        }
+
+        window.showView = (id) => {
+            ['loading-view', 'admin-view', 'input-view', 'result-view', 'error-view'].forEach(v => document.getElementById(v).classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
+            lucide.createIcons();
+        };
+
+        window.handleLookup = () => {
+            const name = document.getElementById('name-input').value.trim().toLowerCase();
+            const phone = document.getElementById('phone-input').value.replace(/\D/g, '');
+            const user = PARTICIPANTS.find(u => u.name.toLowerCase() === name && u.phone.replace(/\D/g, '') === phone);
+            if (user) {
+                document.getElementById('res-name').textContent = user.name;
+                document.getElementById('res-aff').textContent = user.aff;
+                document.getElementById('res-bus').textContent = user.bus;
+                document.getElementById('res-time').textContent = user.time;
+                showView('result-view');
+            } else {
+                showView('error-view');
+            }
+        };
+
+        window.resetApp = () => {
+            document.getElementById('name-input').value = '';
+            document.getElementById('phone-input').value = '';
+            showView('input-view');
+        };
+
+        document.getElementById('drop-zone').onclick = () => document.getElementById('csv-upload').click();
+        document.getElementById('csv-upload').onchange = async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                const rows = event.target.result.split('\n').slice(1);
+                const newData = rows.map(row => {
+                    const cols = row.split(',');
+                    return cols.length < 4 ? null : {
+                        name: cols[0].trim(),
+                        phone: cols[1].trim(),
+                        aff: cols[2].trim(),
+                        bus: cols[3].trim(),
+                        time: cols[4]?.trim() || '09:00 AM'
+                    };
+                }).filter(u => u !== null);
+
+                if (newData.length > 0) {
+                    try {
+                        const batch = writeBatch(db);
+                        newData.forEach((p, idx) => {
+                            const ref = doc(db, 'artifacts', appId, 'public', 'data', 'participants', `p_${idx}`);
+                            batch.set(ref, p);
+                        });
+                        await batch.commit();
+                        await loadGlobalData();
+                        alert("Cloud Synced!");
+                        toggleAdmin();
+                    } catch (error) {
+                        console.error('Upload error:', error);
+                        alert("Upload failed. Check console for details.");
+                    }
+                }
+            };
+            reader.readAsText(file);
+        };
+
+        // Initialize icons and attach admin trigger
+        lucide.createIcons();
+        attachAdminTrigger();
+    </script>
+</body>
+
+</html>
+
