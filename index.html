@@ -63,6 +63,25 @@
                     <input type="file" id="csv-upload" accept=".csv" class="hidden">
                 </div>
                 <div id="upload-msg" class="text-center text-xs font-bold uppercase tracking-widest"></div>
+
+                <!-- Check-in Log Section -->
+                <div class="border-t border-slate-200 pt-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-sm font-bold text-slate-700 flex items-center gap-2">
+                            <i data-lucide="clipboard-list" class="w-4 h-4"></i>
+                            Check-in Log
+                        </h3>
+                        <span id="checkin-count" class="text-xs bg-[#10B981] text-white px-2 py-1 rounded-full">0</span>
+                    </div>
+                    <div id="checkin-log" class="max-h-48 overflow-y-auto space-y-2 text-sm">
+                        <p class="text-slate-400 text-center text-xs py-4">No check-ins yet</p>
+                    </div>
+                    <button onclick="clearCheckins()"
+                        class="w-full mt-3 py-2 text-xs text-slate-400 hover:text-rose-500 transition-colors">
+                        Clear All Check-ins
+                    </button>
+                </div>
+
                 <button onclick="toggleAdmin()"
                     class="w-full py-4 bg-slate-800 text-white rounded-2xl font-bold text-sm hover:bg-slate-700 transition-colors">Exit
                     Admin Mode</button>
@@ -215,7 +234,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, doc, setDoc, getDocs, writeBatch, addDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Firebase configuration
         const firebaseConfig = typeof __firebase_config !== 'undefined'
@@ -264,9 +283,10 @@
             ['loading-view', 'admin-view', 'input-view', 'result-view', 'error-view'].forEach(v => document.getElementById(v).classList.add('hidden'));
             document.getElementById(id).classList.remove('hidden');
             lucide.createIcons();
+            if (id === 'admin-view') loadCheckins();
         };
 
-        window.handleLookup = () => {
+        window.handleLookup = async () => {
             const name = document.getElementById('name-input').value.trim().toLowerCase();
             const phone = document.getElementById('phone-input').value.replace(/\D/g, '');
             const user = PARTICIPANTS.find(u => u.name.toLowerCase() === name && u.phone.replace(/\D/g, '') === phone);
@@ -276,6 +296,21 @@
                 document.getElementById('res-bus').textContent = user.bus;
                 document.getElementById('res-time').textContent = user.time;
                 showView('result-view');
+
+                // Log check-in to Firebase
+                try {
+                    const checkinsRef = collection(db, 'artifacts', appId, 'public', 'data', 'checkins');
+                    await addDoc(checkinsRef, {
+                        name: user.name,
+                        phone: user.phone,
+                        bus: user.bus,
+                        time: user.time,
+                        aff: user.aff,
+                        checkedInAt: new Date().toISOString()
+                    });
+                } catch (error) {
+                    console.log('Check-in logging failed:', error);
+                }
             } else {
                 showView('error-view');
             }
@@ -285,6 +320,55 @@
             document.getElementById('name-input').value = '';
             document.getElementById('phone-input').value = '';
             showView('input-view');
+        };
+
+        // Load check-ins for admin view
+        async function loadCheckins() {
+            try {
+                const checkinsRef = collection(db, 'artifacts', appId, 'public', 'data', 'checkins');
+                const q = query(checkinsRef, orderBy('checkedInAt', 'desc'));
+                const snapshot = await getDocs(q);
+                const checkins = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+
+                const logEl = document.getElementById('checkin-log');
+                const countEl = document.getElementById('checkin-count');
+                countEl.textContent = checkins.length;
+
+                if (checkins.length === 0) {
+                    logEl.innerHTML = '<p class="text-slate-400 text-center text-xs py-4">No check-ins yet</p>';
+                } else {
+                    logEl.innerHTML = checkins.map(c => {
+                        const time = new Date(c.checkedInAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+                        return `<div class="flex justify-between items-center bg-slate-50 rounded-lg px-3 py-2">
+                            <div>
+                                <span class="font-medium text-slate-700">${c.name}</span>
+                                <span class="text-slate-400 text-xs ml-2">${c.aff || ''}</span>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-[#10B981] font-bold text-xs">${c.bus}</span>
+                                <span class="text-slate-400 text-xs ml-1">${time}</span>
+                            </div>
+                        </div>`;
+                    }).join('');
+                }
+            } catch (error) {
+                console.log('Failed to load check-ins:', error);
+            }
+        }
+
+        // Clear all check-ins
+        window.clearCheckins = async () => {
+            if (!confirm('Clear all check-in records?')) return;
+            try {
+                const checkinsRef = collection(db, 'artifacts', appId, 'public', 'data', 'checkins');
+                const snapshot = await getDocs(checkinsRef);
+                const batch = writeBatch(db);
+                snapshot.docs.forEach(d => batch.delete(d.ref));
+                await batch.commit();
+                await loadCheckins();
+            } catch (error) {
+                console.log('Failed to clear check-ins:', error);
+            }
         };
 
         document.getElementById('drop-zone').onclick = () => document.getElementById('csv-upload').click();
@@ -333,4 +417,3 @@
 </body>
 
 </html>
-
