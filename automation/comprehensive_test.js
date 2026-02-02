@@ -16,7 +16,7 @@ async function runTests() {
     console.log('🧪 Starting Comprehensive Test Suite...\n');
     console.log(`Target: ${TEST_URL}\n`);
 
-    const browser = await chromium.launch({ headless: true });
+    const browser = await chromium.launch({ headless: false, slowMo: 300 }); // Visible browser with slowMo for watching
 
     for (const t of TESTS) {
         const context = await browser.newContext();

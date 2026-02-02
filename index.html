@@ -617,16 +617,30 @@
 
                 showView('result-view');
 
-                // Log check-in to Firebase
+                // Log check-in to Firebase (with deduplication)
                 try {
                     const checkinsRef = collection(db, 'artifacts', appId, 'public', 'data', 'checkins');
-                    await addDoc(checkinsRef, {
-                        name: user.name || user.이름 || nameInput,
-                        phone: sanitizedPhone,
-                        activity: user.activity_name || user.액티비티 || user.bus,
-                        department: user.department || user.부서 || '',
-                        checkedInAt: new Date().toISOString()
+
+                    // Check if this phone number already has a check-in
+                    const existingSnapshot = await getDocs(checkinsRef);
+                    const alreadyCheckedIn = existingSnapshot.docs.some(doc => {
+                        const data = doc.data();
+                        return sanitizePhoneNumber(data.phone || '') === sanitizedPhone;
                     });
+
+                    // Only create a new check-in if one doesn't exist
+                    if (!alreadyCheckedIn) {
+                        await addDoc(checkinsRef, {
+                            name: user.name || user.이름 || nameInput,
+                            phone: sanitizedPhone,
+                            activity: user.activity_name || user.액티비티 || user.bus,
+                            department: user.department || user.부서 || '',
+                            checkedInAt: new Date().toISOString()
+                        });
+                        console.log('New check-in recorded for:', sanitizedPhone);
+                    } else {
+                        console.log('Already checked in:', sanitizedPhone);
+                    }
                 } catch (error) {
                     console.log('Check-in logging failed:', error);
                 }
