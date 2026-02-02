@@ -68,34 +68,47 @@
 <body class="bg-slate-100 min-h-screen flex items-center justify-center p-4">
     <div id="app" class="w-full max-w-md bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-slate-200">
         <!-- Main Header: Clean White with Company Logo -->
-        <div class="bg-white px-6 py-4 flex justify-between items-center border-b border-slate-100 relative">
+        <div class="bg-[#00A97A] px-6 py-5 flex justify-between items-center relative text-white">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-slate-50 rounded-lg flex items-center justify-center border border-slate-200">
-                    <i data-lucide="building-2" class="w-6 h-6 text-slate-800"></i>
+                <div
+                    class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center border border-white/30 backdrop-blur-md">
+                    <i data-lucide="building-2" class="w-6 h-6 text-white"></i>
                 </div>
-                <span class="text-xs font-bold text-slate-800 tracking-wide uppercase">Company LOGO</span>
+                <div class="flex flex-col">
+                    <span class="text-[10px] font-bold text-white/60 tracking-[0.2em] leading-tight">B. BRAUN</span>
+                    <span class="text-sm font-black text-white tracking-wide uppercase">COMPANY LOGO</span>
+                </div>
             </div>
             <div class="flex items-center gap-2">
                 <div id="admin-trigger" onclick="toggleAdmin()"
-                    class="cursor-pointer hover:opacity-80 transition-opacity p-2">
-                    <i data-lucide="settings" class="w-5 h-5 text-slate-300"></i>
+                    class="cursor-pointer hover:bg-white/10 p-2 rounded-xl transition-colors">
+                    <i data-lucide="settings" class="w-5 h-5 text-white/50"></i>
                 </div>
             </div>
         </div>
 
         <!-- Key Visual Banner -->
-        <div
-            class="relative h-44 bg-slate-50 flex items-center justify-center overflow-hidden border-b border-slate-100">
-            <div class="absolute inset-0 opacity-[0.03] grayscale"
-                style="background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDEwIEwgNDAgMTAgTSAxMCAwIEwgMTAgNDAgTSAwIDIwIEwgNDAgMjAgTSAyMCAwIEwgMjAgNDAgTSAwIDMwIEwgNDAgMzAgTSAzMCAwIEwgMzAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMEZGRiIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDBlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+');">
+        <div class="relative h-48 flex items-center justify-center overflow-hidden bg-white">
+            <div class="absolute inset-0 bg-gradient-to-br from-[#00A97A]/5 via-white to-[#9E2AB5]/5"></div>
+            <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,169,122,0.05),transparent_70%)]">
             </div>
-            <div class="text-center z-10">
-                <i data-lucide="image" class="w-12 h-12 text-slate-200 mx-auto"></i>
-                <p class="text-xs text-slate-300 mt-3 font-bold uppercase tracking-[0.2em]">행사 키비주얼 이미지</p>
+            <div class="z-10 text-center px-4">
+                <div
+                    class="w-20 h-20 mx-auto bg-slate-50 rounded-full flex items-center justify-center border border-slate-100 mb-4 shadow-sm">
+                    <i data-lucide="image" class="w-8 h-8 text-slate-200"></i>
+                </div>
+                <p class="text-[11px] text-slate-300 font-black uppercase tracking-[0.3em] leading-relaxed">행사 키비주얼
+                    이미지<br><span class="opacity-50">(EVENT KEY VISUAL)</span></p>
+            </div>
+            <!-- Decorative Dots -->
+            <div class="absolute bottom-4 right-4 flex gap-1">
+                <div class="w-1 h-1 rounded-full bg-[#00A97A]/20"></div>
+                <div class="w-1 h-1 rounded-full bg-[#00A97A]/20"></div>
+                <div class="w-1 h-1 rounded-full bg-[#00A97A]/20"></div>
             </div>
         </div>
 
-        <div class="p-8 relative" id="content-area">
+        <div class="p-8 relative min-h-[400px] flex flex-col" id="content-area">
             <!-- Loading View -->
             <div id="loading-view" class="flex flex-col items-center justify-center py-20 space-y-4">
                 <div class="w-12 h-12 border-4 border-[#00A97A] border-t-transparent rounded-full animate-spin"></div>
@@ -136,86 +149,130 @@
             </div>
 
             <!-- Input View (Verification) -->
-            <div id="input-view" class="hidden slide-in space-y-0">
-                <!-- Violet Title Bar -->
-                <div class="bg-[#9E2AB5] py-3 text-center mb-10 mx-[-2rem]">
-                    <h2 class="text-white font-bold text-sm tracking-[0.2em]">DAY 2 선택 Activity</h2>
+            <div id="input-view" class="hidden slide-in space-y-0 flex-1">
+                <!-- Violet Title Banner -->
+                <div
+                    class="bg-[#9E2AB5] py-4 text-center mb-12 mx-[-2rem] relative shadow-[0_4px_12px_rgba(158,42,181,0.2)]">
+                    <h2 class="text-white font-black text-sm tracking-[0.3em] uppercase">Day 2 선택 Activity</h2>
+                    <div class="absolute bottom-0 left-0 right-0 h-1 bg-black/10"></div>
                 </div>
 
-                <div class="space-y-8">
-                    <div class="flex items-center gap-6">
-                        <label class="w-12 text-sm font-bold text-slate-600">성명</label>
+                <div class="space-y-10">
+                    <div class="relative group">
+                        <label
+                            class="absolute -top-3 left-4 px-2 bg-white text-[10px] font-black text-[#9E2AB5] tracking-widest uppercase transition-all group-focus-within:text-[#00A97A]">성명
+                            (Name)</label>
                         <input type="text" id="name-input" placeholder="성명을 입력하세요"
-                            class="flex-1 px-4 py-3 bg-white border border-slate-300 rounded-lg outline-none focus:border-[#9E2AB5] transition-all text-sm">
+                            class="w-full px-6 py-4 bg-white border-2 border-slate-100 rounded-2xl outline-none focus:border-[#009268] focus:ring-4 focus:ring-[#00A97A]/10 transition-all font-bold text-slate-800 placeholder:text-slate-300">
                     </div>
-                    <div class="flex items-center gap-6">
-                        <label class="w-12 text-sm font-bold text-slate-600">연락처</label>
+
+                    <div class="relative group">
+                        <label
+                            class="absolute -top-3 left-4 px-2 bg-white text-[10px] font-black text-[#9E2AB5] tracking-widest uppercase transition-all group-focus-within:text-[#00A97A]">연락처
+                            (Phone)</label>
                         <input type="tel" id="phone-input" placeholder="연락처를 입력하세요"
-                            class="flex-1 px-4 py-3 bg-white border border-slate-300 rounded-lg outline-none focus:border-[#9E2AB5] transition-all text-sm">
+                            class="w-full px-6 py-4 bg-white border-2 border-slate-100 rounded-2xl outline-none focus:border-[#009268] focus:ring-4 focus:ring-[#00A97A]/10 transition-all font-bold text-slate-800 placeholder:text-slate-300">
                     </div>
 
                     <button onclick="handleLookup()" id="find-btn"
-                        class="w-full bg-white border-2 border-slate-800 text-slate-800 font-bold py-4 rounded-xl shadow-sm hover:bg-slate-50 transition-all mt-12 text-sm">
-                        본인 인증
+                        class="w-full bg-[#00A97A] text-white font-black py-5 rounded-2xl shadow-[0_8px_20px_rgba(0,169,122,0.2)] hover:bg-[#009268] hover:translate-y-[-2px] active:scale-[0.98] transition-all mt-10 text-sm tracking-[0.2em] uppercase">
+                        본인 인증 (Verify)
                     </button>
+
+                    <p class="text-[10px] text-center text-slate-300 font-bold uppercase tracking-widest">Secure
+                        Verification Portal</p>
                 </div>
             </div>
 
             <!-- Result View (Personal Itinerary) -->
-            <div id="result-view" class="hidden slide-in space-y-0">
-                <!-- User Tour Info -->
-                <div class="space-y-1 text-center pb-6 mb-6 border-b border-dashed border-slate-200">
-                    <h3 class="text-lg font-bold text-slate-800"><span id="res-name">User</span>님 투어 안내</h3>
-                    <p id="res-dept" class="text-sm text-slate-500 font-medium"></p>
-                    <p class="text-sm text-slate-600 mt-3 italic">선택투어는 <span id="res-activity-summary"
-                            class="font-bold text-[#9E2AB5]">Activity</span> 입니다.</p>
+            <div id="result-view" class="hidden slide-in space-y-0 flex-1">
+                <!-- User Profile Summary -->
+                <div class="space-y-3 text-center pb-8 mb-8 border-b-2 border-slate-50 relative">
+                    <div
+                        class="w-20 h-20 bg-gradient-to-tr from-[#00A97A] to-[#00C896] rounded-full mx-auto flex items-center justify-center shadow-lg mb-4">
+                        <span id="res-name-initial" class="text-2xl font-black text-white uppercase">U</span>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-black text-slate-800 tracking-tight"><span id="res-name">User</span>님
+                        </h3>
+                        <p id="res-dept" class="text-xs text-slate-400 font-black uppercase tracking-widest mt-1"></p>
+                    </div>
+                    <div class="mt-4 px-6 py-2 bg-slate-50 rounded-full inline-block">
+                        <p class="text-[11px] text-slate-600 font-bold">선택투어: <span id="res-activity-summary"
+                                class="text-[#9E2AB5] font-black">Activity</span></p>
+                    </div>
                 </div>
 
-                <!-- Violet Activity Banner -->
-                <div class="bg-[#9E2AB5] py-3 text-center mx-[-2rem] mb-8">
-                    <h2 class="text-white font-bold text-sm tracking-widest"><span
+                <!-- Activity Banner -->
+                <div
+                    class="bg-[#9E2AB5] py-4 text-center mx-[-2rem] mb-10 shadow-[0_4px_12px_rgba(158,42,181,0.15)] relative">
+                    <h2 class="text-white font-black text-xs tracking-[0.2em] uppercase"><span
                             id="res-activity-banner">Activity</span> 투어 안내</h2>
                 </div>
 
-                <!-- Logistics List -->
-                <div class="space-y-5 text-sm">
-                    <div class="flex items-center">
-                        <span class="w-24 font-bold text-slate-500">출발 시간</span>
-                        <span id="res-time" class="flex-1 font-bold text-slate-800">09:00</span>
-                    </div>
-                    <div class="flex items-center">
-                        <span class="w-24 font-bold text-slate-500">집합 장소</span>
-                        <span id="res-location" class="flex-1 font-bold text-slate-800">1층 로비</span>
-                    </div>
-                    <div class="flex items-center">
-                        <span class="w-24 font-bold text-slate-500">가이드</span>
-                        <span id="res-guide" class="flex-1 text-slate-700 font-medium">-</span>
+                <!-- Logistics Card -->
+                <div class="space-y-8">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100/50">
+                            <span
+                                class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Departure</span>
+                            <span id="res-time" class="text-sm font-black text-slate-800">09:00</span>
+                        </div>
+                        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100/50">
+                            <span
+                                class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Meeting
+                                Point</span>
+                            <span id="res-location" class="text-sm font-black text-slate-800 truncate">1층 로비</span>
+                        </div>
                     </div>
 
-                    <div class="pt-2">
-                        <span class="block font-bold text-slate-500 mb-3">일정 요약</span>
-                        <div id="timeline-container" class="space-y-3 pl-4 border-l-2 border-slate-50 ml-1">
+                    <div class="flex items-center gap-4 bg-[#00A97A]/5 p-4 rounded-2xl border border-[#00A97A]/10">
+                        <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm">
+                            <i data-lucide="user" class="w-5 h-5 text-[#00A97A]"></i>
+                        </div>
+                        <div>
+                            <span class="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Guide
+                                Info</span>
+                            <span id="res-guide" class="text-sm font-bold text-slate-700">-</span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-2">
+                            <div class="w-1.5 h-4 bg-[#9E2AB5] rounded-full"></div>
+                            <h4 class="text-[11px] font-black text-slate-800 uppercase tracking-widest">Schedule Summary
+                            </h4>
+                        </div>
+                        <div id="timeline-container" class="space-y-3 pl-1">
                             <!-- Items inserted via JS -->
                         </div>
                     </div>
 
-                    <div id="notice-box" class="pt-6 border-t border-slate-100 space-y-3 hidden">
-                        <div id="notice-supplies" class="flex items-start">
-                            <span class="w-24 font-bold text-slate-500 flex-shrink-0">준비물</span>
-                            <span class="text-slate-700 font-medium"></span>
-                        </div>
-                        <div id="notice-warning" class="flex items-start">
-                            <span class="w-24 font-bold text-slate-500 flex-shrink-0">주의사항</span>
-                            <span class="text-slate-700 font-medium"></span>
+                    <div id="notice-box" class="pt-8 border-t border-slate-100 space-y-4 hidden slide-in">
+                        <div class="bg-amber-50 rounded-2xl p-5 border border-amber-100">
+                            <div class="flex items-center gap-2 mb-3 text-amber-700">
+                                <i data-lucide="alert-circle" class="w-4 h-4"></i>
+                                <span class="text-[10px] font-black uppercase tracking-widest">Important Notice</span>
+                            </div>
+                            <div class="space-y-3">
+                                <div id="notice-supplies" class="text-xs text-amber-900/70 font-bold leading-relaxed">
+                                    <span class="text-amber-600 mr-2">●</span><span></span>
+                                </div>
+                                <div id="notice-warning" class="text-xs text-amber-900/70 font-bold leading-relaxed">
+                                    <span class="text-amber-600 mr-2">●</span><span></span>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="pt-12 text-center">
-                    <button onclick="resetApp()"
-                        class="text-slate-300 text-[10px] font-bold uppercase tracking-widest hover:text-slate-500 transition-colors">
-                        ← New Search
-                    </button>
+                    <div class="pt-10 pb-4 text-center">
+                        <button onclick="resetApp()"
+                            class="group flex items-center justify-center gap-2 mx-auto text-slate-300 hover:text-[#00A97A] transition-all">
+                            <i data-lucide="arrow-left"
+                                class="w-4 h-4 group-hover:-translate-x-1 transition-transform"></i>
+                            <span class="text-[10px] font-black uppercase tracking-[0.3em]">New Search</span>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -232,10 +289,14 @@
         </div>
 
         <!-- App Footer -->
-        <div class="bg-white border-t border-slate-100 py-6 px-8 text-center mt-auto">
-            <div class="flex items-center justify-center gap-2 opacity-20 group grayscale">
-                <i data-lucide="calendar-days" class="w-3 h-3 text-slate-800"></i>
-                <span class="text-[9px] font-bold text-slate-800 uppercase tracking-[0.4em]">행사 logo</span>
+        <!-- App Footer Info -->
+        <div class="bg-white border-t border-slate-50 py-8 px-10 text-center mt-auto">
+            <div
+                class="flex items-center justify-center gap-3 opacity-30 grayscale saturate-0 hover:grayscale-0 hover:saturate-100 transition-all cursor-default">
+                <div class="w-6 h-6 rounded-lg bg-slate-800 flex items-center justify-center">
+                    <i data-lucide="award" class="w-3.5 h-3.5 text-white"></i>
+                </div>
+                <span class="text-[10px] font-black text-slate-800 uppercase tracking-[0.5em]">행사 logo</span>
             </div>
         </div>
     </div>
@@ -424,7 +485,9 @@
             if (user) {
                 // Display user info
                 const activityName = user.activity_name || user.액티비티 || user.bus || 'Activity';
-                document.getElementById('res-name').textContent = user.name || user.이름 || nameInput;
+                const displayName = user.name || user.이름 || nameInput;
+                document.getElementById('res-name').textContent = displayName;
+                document.getElementById('res-name-initial').textContent = displayName.charAt(0);
                 document.getElementById('res-dept').textContent = user.department || user.부서 || '';
                 document.getElementById('res-activity-summary').textContent = activityName;
                 document.getElementById('res-activity-banner').textContent = activityName;
