@@ -237,8 +237,8 @@
                         <p id="res-dept" class="text-xs text-slate-400 font-black uppercase tracking-widest mt-1"></p>
                     </div>
                     <div class="mt-4 px-6 py-2 bg-slate-50 rounded-full inline-block">
-                        <p class="text-[11px] text-slate-600 font-bold">선택투어: <span id="res-activity-summary"
-                                class="text-[#9E2AB5] font-black">Activity</span></p>
+                        <p class="text-[11px] text-slate-600 font-bold">선택투어는 <span id="res-activity-summary"
+                                class="text-[#9E2AB5] font-black">Activity</span> 입니다.</p>
                     </div>
                 </div>
 
@@ -508,17 +508,23 @@
         };
 
         // ============================================
-        // PHONE-ONLY LOOKUP (Name is cosmetic)
+        // DUAL-KEY LOOKUP (Name AND Phone) - Addressing PPT Slide 4 Q1
         // ============================================
         window.handleLookup = async () => {
             const nameInput = document.getElementById('name-input').value.trim();
             const phoneInput = document.getElementById('phone-input').value;
             const sanitizedPhone = sanitizePhoneNumber(phoneInput);
 
-            // Phone-only lookup - find by sanitized phone number
+            if (!nameInput) {
+                alert("성명을 입력해주세요.");
+                return;
+            }
+
+            // Find by BOTH Name and Sanitized Phone
             const user = PARTICIPANTS.find(u => {
+                const storedName = (u.name || u.이름 || '').trim();
                 const storedPhone = sanitizePhoneNumber(u.phone || u.휴대전화 || '');
-                return storedPhone === sanitizedPhone;
+                return storedName === nameInput && storedPhone === sanitizedPhone;
             });
 
             if (user) {
