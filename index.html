@@ -118,34 +118,73 @@
             <!-- Admin View -->
             <div id="admin-view" class="hidden slide-in space-y-6">
                 <div class="text-center">
-                    <h2 class="text-xl font-bold text-slate-800">Admin Upload</h2>
+                    <h2 class="text-xl font-bold text-slate-800">Admin Dashboard</h2>
                 </div>
-                <div class="border-2 border-dashed border-slate-200 rounded-2xl p-8 text-center bg-slate-50 hover:border-[#00A97A] cursor-pointer transition-colors"
+
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex flex-col items-center">
+                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total
+                            Reg.</span>
+                        <span id="admin-total-count" class="text-xl font-black text-slate-800">0</span>
+                    </div>
+                    <div
+                        class="bg-[#00A97A]/5 p-4 rounded-2xl border border-[#00A97A]/10 flex flex-col items-center text-[#00A97A]">
+                        <span class="text-[10px] font-black text-[#00A97A]/50 uppercase tracking-widest mb-1">Checked
+                            In</span>
+                        <span id="admin-checked-count" class="text-xl font-black">0</span>
+                    </div>
+                </div>
+
+                <div class="border-2 border-dashed border-slate-200 rounded-2xl p-6 text-center bg-slate-50 hover:border-[#00A97A] cursor-pointer transition-colors"
                     id="drop-zone">
-                    <i data-lucide="upload-cloud" class="w-10 h-10 mx-auto text-slate-400 mb-2"></i>
-                    <p class="text-xs text-slate-500">Click to upload Participant CSV</p>
+                    <i data-lucide="upload-cloud" class="w-8 h-8 mx-auto text-slate-400 mb-2"></i>
+                    <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Update Participant CSV</p>
                     <input type="file" id="csv-upload" accept=".csv" class="hidden">
                 </div>
                 <div id="upload-msg" class="text-center text-xs font-bold uppercase tracking-widest h-4"></div>
 
-                <div class="border-t border-slate-100 pt-4">
-                    <div class="flex items-center justify-between mb-3">
-                        <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Check-in Log (<span
-                                id="checkin-count">0</span>)</h3>
+                <div class="border-t border-slate-100 pt-6">
+                    <!-- Tabs -->
+                    <div class="flex gap-4 mb-4 border-b border-slate-50">
+                        <button onclick="switchAdminTab('log')" id="tab-log-btn"
+                            class="pb-2 text-[10px] font-black uppercase tracking-widest text-[#00A97A] border-b-2 border-[#00A97A]">Check-in
+                            Log</button>
+                        <button onclick="switchAdminTab('status')" id="tab-status-btn"
+                            class="pb-2 text-[10px] font-black uppercase tracking-widest text-slate-300">Attendance
+                            Status</button>
                     </div>
-                    <div id="checkin-log" class="max-h-40 overflow-y-auto space-y-2 text-xs">
-                        <p class="text-slate-400 text-center py-4">No data</p>
+
+                    <div id="checkin-log-container" class="space-y-2">
+                        <div id="checkin-log" class="max-h-60 overflow-y-auto space-y-2 text-xs">
+                            <p class="text-slate-400 text-center py-4">Loading log...</p>
+                        </div>
                     </div>
-                    <div class="flex gap-2 mt-4">
-                        <button onclick="exportCheckins()"
-                            class="flex-1 py-2 text-[10px] font-bold text-[#00A97A] border border-[#00A97A] rounded-lg">EXPORT</button>
+
+                    <div id="attendance-status-container" class="hidden space-y-2">
+                        <div class="flex justify-between items-center px-2 mb-2">
+                            <span
+                                class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Participant</span>
+                            <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Status</span>
+                        </div>
+                        <div id="attendance-list" class="max-h-60 overflow-y-auto space-y-2 text-xs">
+                            <p class="text-slate-400 text-center py-4">Loading status...</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 mt-6">
+                        <button onclick="exportFullReport()"
+                            class="py-3 text-[10px] font-black text-[#00A97A] border border-[#00A97A]/20 bg-white rounded-xl shadow-sm hover:bg-[#00A97A]/5 transition-all uppercase tracking-widest">Full
+                            Report</button>
                         <button onclick="clearCheckins()"
-                            class="flex-1 py-2 text-[10px] font-bold text-rose-500 border border-rose-100 rounded-lg">CLEAR</button>
+                            class="py-3 text-[10px] font-black text-rose-500 border border-rose-100 bg-white rounded-xl shadow-sm hover:bg-rose-50 transition-all uppercase tracking-widest">Clear
+                            Logs</button>
                     </div>
                 </div>
 
                 <button onclick="showView('input-view')"
-                    class="w-full py-4 bg-slate-800 text-white rounded-xl font-bold text-sm">EXIT ADMIN</button>
+                    class="w-full py-4 bg-slate-800 text-white rounded-2xl font-black text-xs tracking-[0.2em] uppercase shadow-lg shadow-slate-200">EXIT
+                    DASHBOARD</button>
             </div>
 
             <!-- Input View (Verification) -->
@@ -555,43 +594,111 @@
             showView('input-view');
         };
 
-        // Load check-ins for admin view
+        // Admin UI Tab Control
+        window.switchAdminTab = (tab) => {
+            const logBtn = document.getElementById('tab-log-btn');
+            const statusBtn = document.getElementById('tab-status-btn');
+            const logCont = document.getElementById('checkin-log-container');
+            const statusCont = document.getElementById('attendance-status-container');
+
+            if (tab === 'log') {
+                logBtn.classList.add('text-[#00A97A]', 'border-b-2', 'border-[#00A97A]');
+                logBtn.classList.remove('text-slate-300');
+                statusBtn.classList.remove('text-[#00A97A]', 'border-b-2', 'border-[#00A97A]');
+                statusBtn.classList.add('text-slate-300');
+                logCont.classList.remove('hidden');
+                statusCont.classList.add('hidden');
+            } else {
+                statusBtn.classList.add('text-[#00A97A]', 'border-b-2', 'border-[#00A97A]');
+                statusBtn.classList.remove('text-slate-300');
+                logBtn.classList.remove('text-[#00A97A]', 'border-b-2', 'border-[#00A97A]');
+                logBtn.classList.add('text-slate-300');
+                statusCont.classList.remove('hidden');
+                logCont.classList.add('hidden');
+                renderAttendanceList();
+            }
+        };
+
+        let currentCheckins = [];
+
+        // Load check-ins and update dashboard
         async function loadCheckins() {
             try {
                 const checkinsRef = collection(db, 'artifacts', appId, 'public', 'data', 'checkins');
                 const q = query(checkinsRef, orderBy('checkedInAt', 'desc'));
                 const snapshot = await getDocs(q);
-                const checkins = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                currentCheckins = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
 
                 const logEl = document.getElementById('checkin-log');
-                const countEl = document.getElementById('checkin-count');
-                countEl.textContent = checkins.length;
+                document.getElementById('admin-total-count').textContent = PARTICIPANTS.length;
+                document.getElementById('admin-checked-count').textContent = currentCheckins.length;
 
-                if (checkins.length === 0) {
-                    logEl.innerHTML = '<p class="text-slate-400 text-center text-xs py-4">No check-ins yet</p>';
+                if (currentCheckins.length === 0) {
+                    logEl.innerHTML = '<p class="text-slate-400 text-center py-8">No records found</p>';
                 } else {
-                    logEl.innerHTML = checkins.map(c => {
+                    logEl.innerHTML = currentCheckins.map(c => {
                         const time = new Date(c.checkedInAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
-                        return `<div class="flex justify-between items-center bg-slate-50 rounded-lg px-3 py-2">
+                        return `<div class="flex justify-between items-center bg-slate-50/50 border border-slate-100 rounded-xl px-4 py-3">
                             <div>
-                                <span class="font-medium text-slate-700">${c.name}</span>
-                                <span class="text-slate-400 text-xs ml-2">${c.department || ''}</span>
+                                <p class="font-black text-slate-800">${c.name}</p>
+                                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">${c.department || 'No Dept'}</p>
                             </div>
                             <div class="text-right">
-                                <span class="text-[#9E2AB5] font-bold text-xs">${c.activity || ''}</span>
-                                <span class="text-slate-400 text-xs ml-1">${time}</span>
+                                <p class="text-[#9E2AB5] font-black text-xs">${c.activity || 'Activity'}</p>
+                                <p class="text-[10px] text-slate-300 font-bold">${time}</p>
                             </div>
                         </div>`;
                     }).join('');
                 }
+
+                // If status tab is active, refresh it too
+                if (!document.getElementById('attendance-status-container').classList.contains('hidden')) {
+                    renderAttendanceList();
+                }
             } catch (error) {
-                console.log('Failed to load check-ins:', error);
+                console.error('Failed to load check-ins:', error);
             }
+        }
+
+        // Render the full list with check-in status
+        function renderAttendanceList() {
+            const listEl = document.getElementById('attendance-list');
+
+            // Map checkins by sanitized phone for quick lookup
+            const checkedMap = new Map();
+            currentCheckins.forEach(c => {
+                const sPhone = sanitizePhoneNumber(c.phone || '');
+                if (sPhone) checkedMap.set(sPhone, c);
+            });
+
+            if (PARTICIPANTS.length === 0) {
+                listEl.innerHTML = '<p class="text-slate-400 text-center py-8">Upload CSV first</p>';
+                return;
+            }
+
+            listEl.innerHTML = PARTICIPANTS.map(p => {
+                const sPhone = sanitizePhoneNumber(p.phone || p.휴대전화 || '');
+                const check = checkedMap.get(sPhone);
+                const isChecked = !!check;
+
+                return `<div class="flex justify-between items-center border-b border-slate-50 py-2 px-1">
+                    <div class="flex flex-col">
+                        <span class="font-bold text-slate-700">${p.name || p.이름}</span>
+                        <span class="text-[9px] text-slate-400 font-medium">${p.department || p.부서 || '-'}</span>
+                    </div>
+                    <div>
+                        ${isChecked
+                        ? `<span class="px-2 py-0.5 bg-[#00A97A]/10 text-[#00A97A] rounded-full text-[9px] font-black uppercase">Checked</span>`
+                        : `<span class="px-2 py-0.5 bg-slate-100 text-slate-400 rounded-full text-[9px] font-black uppercase">Pending</span>`
+                    }
+                    </div>
+                </div>`;
+            }).join('');
         }
 
         // Clear all check-ins
         window.clearCheckins = async () => {
-            if (!confirm('Clear all check-in records?')) return;
+            if (!confirm('This will delete all check-in records. Continue?')) return;
             try {
                 const checkinsRef = collection(db, 'artifacts', appId, 'public', 'data', 'checkins');
                 const snapshot = await getDocs(checkinsRef);
@@ -600,49 +707,48 @@
                 await batch.commit();
                 await loadCheckins();
             } catch (error) {
-                console.log('Failed to clear check-ins:', error);
+                console.error('Failed to clear records:', error);
             }
         };
 
-        // Export check-ins as CSV
-        window.exportCheckins = async () => {
-            try {
-                const checkinsRef = collection(db, 'artifacts', appId, 'public', 'data', 'checkins');
-                const q = query(checkinsRef, orderBy('checkedInAt', 'desc'));
-                const snapshot = await getDocs(q);
-                const checkins = snapshot.docs.map(d => d.data());
-
-                if (checkins.length === 0) {
-                    alert('No check-ins to export');
-                    return;
-                }
-
-                // Create CSV content
-                const headers = ['Name', 'Phone', 'Department', 'Activity', 'Checked In At'];
-                const rows = checkins.map(c => [
-                    c.name,
-                    c.phone,
-                    c.department || '',
-                    c.activity || '',
-                    new Date(c.checkedInAt).toLocaleString('ko-KR')
-                ]);
-
-                const csvContent = [headers, ...rows]
-                    .map(row => row.map(cell => `"${cell}"`).join(','))
-                    .join('\n');
-
-                // Download file
-                const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = `checkins_${new Date().toISOString().slice(0, 10)}.csv`;
-                link.click();
-                URL.revokeObjectURL(url);
-            } catch (error) {
-                console.log('Failed to export check-ins:', error);
-                alert('Export failed');
+        // Export Full Report (Attendance Status)
+        window.exportFullReport = async () => {
+            if (PARTICIPANTS.length === 0) {
+                alert('No participant data loaded');
+                return;
             }
+
+            const checkedMap = new Map();
+            currentCheckins.forEach(c => {
+                const sPhone = sanitizePhoneNumber(c.phone || '');
+                if (sPhone) checkedMap.set(sPhone, c);
+            });
+
+            const headers = ['Name', 'Phone', 'Department', 'Activity', 'Status', 'Check-in Time'];
+            const rows = PARTICIPANTS.map(p => {
+                const sPhone = sanitizePhoneNumber(p.phone || p.휴대전화 || '');
+                const check = checkedMap.get(sPhone);
+                return [
+                    p.name || p.이름,
+                    p.phone || p.휴대전화 || '',
+                    p.department || p.부서 || '',
+                    p.activity_name || p.액티비티 || p.bus || '',
+                    check ? 'CHECKED-IN' : 'PENDING',
+                    check ? new Date(check.checkedInAt).toLocaleString('ko-KR') : '-'
+                ];
+            });
+
+            const csvContent = [headers, ...rows]
+                .map(row => row.map(cell => `"${cell}"`).join(','))
+                .join('\n');
+
+            const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `attendance_report_${new Date().toISOString().slice(0, 10)}.csv`;
+            link.click();
+            URL.revokeObjectURL(url);
         };
 
         // ============================================
