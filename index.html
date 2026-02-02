@@ -67,54 +67,37 @@
 
 <body class="bg-slate-100 min-h-screen flex items-center justify-center p-4">
     <div id="app" class="w-full max-w-md bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-slate-200">
-        <!-- Header with BB Green + Company Logo -->
-        <div class="bg-[#00A97A] p-6 text-white relative">
-            <!-- Logo Row -->
-            <div class="flex justify-between items-center mb-4">
-                <!-- Company Logo Placeholder -->
-                <div class="flex items-center gap-3">
-                    <div
-                        class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm border border-white/30">
-                        <i data-lucide="building-2" class="w-6 h-6 text-white/80"></i>
-                    </div>
-                    <span class="text-sm font-bold text-white/90 tracking-wide">B.BRAUN</span>
+        <!-- Main Header: Clean White with Company Logo -->
+        <div class="bg-white px-6 py-4 flex justify-between items-center border-b border-slate-100 relative">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-slate-50 rounded-lg flex items-center justify-center border border-slate-200">
+                    <i data-lucide="building-2" class="w-6 h-6 text-slate-800"></i>
                 </div>
-                <!-- Event Logo Placeholder -->
-                <div class="flex items-center gap-2">
-                    <div
-                        class="px-3 py-1 bg-white/20 rounded-full text-[10px] font-bold tracking-wider backdrop-blur-sm border border-white/30">
-                        DAY 2
-                    </div>
-                    <div id="admin-trigger" onclick="toggleAdmin()"
-                        class="cursor-pointer hover:opacity-80 transition-opacity ml-2">
-                        <i data-lucide="settings" class="w-5 h-5 opacity-50"></i>
-                    </div>
-                </div>
+                <span class="text-xs font-bold text-slate-800 tracking-wide uppercase">Company LOGO</span>
             </div>
-            <!-- Event Title -->
-            <div class="text-center">
-                <h1 class="text-2xl font-bold tracking-tight">선택 Activity</h1>
-                <p class="text-emerald-100 opacity-80 text-sm mt-1">Corporate Event 2024</p>
+            <div class="flex items-center gap-2">
+                <div id="admin-trigger" onclick="toggleAdmin()"
+                    class="cursor-pointer hover:opacity-80 transition-opacity p-2">
+                    <i data-lucide="settings" class="w-5 h-5 text-slate-300"></i>
+                </div>
             </div>
         </div>
 
-        <!-- Key Visual Banner (Placeholder) -->
+        <!-- Key Visual Banner -->
         <div
-            class="relative h-32 bg-gradient-to-br from-[#00A97A]/20 via-[#9E2AB5]/10 to-[#00A97A]/20 flex items-center justify-center overflow-hidden">
-            <div
-                class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDEwIEwgNDAgMTAgTSAxMCAwIEwgMTAgNDAgTSAwIDIwIEwgNDAgMjAgTSAyMCAwIEwgMjAgNDAgTSAwIDMwIEwgNDAgMzAgTSAzMCAwIEwgMzAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwQTk3QSIgc3Ryb2tlLW9wYWNpdHk9IjAuMDUiIHN0cm9rZS13aWR0aD0iMSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmlkKSIvPjwvc3ZnPg==')] opacity-50">
+            class="relative h-44 bg-slate-50 flex items-center justify-center overflow-hidden border-b border-slate-100">
+            <div class="absolute inset-0 opacity-[0.03] grayscale"
+                style="background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDEwIEwgNDAgMTAgTSAxMCAwIEwgMTAgNDAgTSAwIDIwIEwgNDAgMjAgTSAyMCAwIEwgMjAgNDAgTSAwIDMwIEwgNDAgMzAgTSAzMCAwIEwgMzAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMEZGRiIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDBlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+');">
             </div>
             <div class="text-center z-10">
-                <div class="flex items-center justify-center gap-2 text-[#00A97A]">
-                    <i data-lucide="image" class="w-8 h-8 opacity-40"></i>
-                </div>
-                <p class="text-[10px] text-slate-400 mt-2 font-medium uppercase tracking-widest">Event Key Visual</p>
+                <i data-lucide="image" class="w-12 h-12 text-slate-200 mx-auto"></i>
+                <p class="text-xs text-slate-300 mt-3 font-bold uppercase tracking-[0.2em]">행사 키비주얼 이미지</p>
             </div>
         </div>
 
-        <div class="p-8" id="content-area">
+        <div class="p-8 relative" id="content-area">
             <!-- Loading View -->
-            <div id="loading-view" class="flex flex-col items-center justify-center py-12 space-y-4">
+            <div id="loading-view" class="flex flex-col items-center justify-center py-20 space-y-4">
                 <div class="w-12 h-12 border-4 border-[#00A97A] border-t-transparent rounded-full animate-spin"></div>
                 <p class="text-slate-400 font-medium text-sm">Syncing with cloud...</p>
             </div>
@@ -130,164 +113,130 @@
                     <p class="text-xs text-slate-500">Click to upload Participant CSV</p>
                     <input type="file" id="csv-upload" accept=".csv" class="hidden">
                 </div>
-                <div id="upload-msg" class="text-center text-xs font-bold uppercase tracking-widest"></div>
+                <div id="upload-msg" class="text-center text-xs font-bold uppercase tracking-widest h-4"></div>
 
-                <!-- Check-in Log Section -->
-                <div class="border-t border-slate-200 pt-4">
+                <div class="border-t border-slate-100 pt-4">
                     <div class="flex items-center justify-between mb-3">
-                        <h3 class="text-sm font-bold text-slate-700 flex items-center gap-2">
-                            <i data-lucide="clipboard-list" class="w-4 h-4"></i>
-                            Check-in Log
-                        </h3>
-                        <span id="checkin-count" class="text-xs bg-[#00A97A] text-white px-2 py-1 rounded-full">0</span>
+                        <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Check-in Log (<span
+                                id="checkin-count">0</span>)</h3>
                     </div>
-                    <div id="checkin-log" class="max-h-48 overflow-y-auto space-y-2 text-sm">
-                        <p class="text-slate-400 text-center text-xs py-4">No check-ins yet</p>
+                    <div id="checkin-log" class="max-h-40 overflow-y-auto space-y-2 text-xs">
+                        <p class="text-slate-400 text-center py-4">No data</p>
                     </div>
-                    <div class="flex gap-2 mt-3">
+                    <div class="flex gap-2 mt-4">
                         <button onclick="exportCheckins()"
-                            class="flex-1 py-2 text-xs text-[#00A97A] border border-[#00A97A] rounded-lg hover:bg-[#00A97A] hover:text-white transition-colors">
-                            Export CSV
-                        </button>
+                            class="flex-1 py-2 text-[10px] font-bold text-[#00A97A] border border-[#00A97A] rounded-lg">EXPORT</button>
                         <button onclick="clearCheckins()"
-                            class="flex-1 py-2 text-xs text-slate-400 border border-slate-200 rounded-lg hover:text-rose-500 hover:border-rose-500 transition-colors">
-                            Clear All
-                        </button>
+                            class="flex-1 py-2 text-[10px] font-bold text-rose-500 border border-rose-100 rounded-lg">CLEAR</button>
                     </div>
                 </div>
 
-                <button onclick="toggleAdmin()"
-                    class="w-full py-4 bg-slate-800 text-white rounded-2xl font-bold text-sm hover:bg-slate-700 transition-colors">Exit
-                    Admin Mode</button>
+                <button onclick="showView('input-view')"
+                    class="w-full py-4 bg-slate-800 text-white rounded-xl font-bold text-sm">EXIT ADMIN</button>
             </div>
 
-            <!-- Input View (Login) -->
-            <div id="input-view" class="hidden space-y-6">
-                <div class="text-center space-y-2">
-                    <h2 class="text-2xl font-extrabold text-slate-800">Welcome</h2>
-                    <p class="text-slate-500">Enter your info to see your itinerary.</p>
+            <!-- Input View (Verification) -->
+            <div id="input-view" class="hidden slide-in space-y-0">
+                <!-- Violet Title Bar -->
+                <div class="bg-[#9E2AB5] py-3 text-center mb-10 mx-[-2rem]">
+                    <h2 class="text-white font-bold text-sm tracking-[0.2em]">DAY 2 선택 Activity</h2>
                 </div>
-                <div class="space-y-4">
-                    <div class="space-y-1">
-                        <label class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Full Name</label>
-                        <div class="relative">
-                            <i data-lucide="user"
-                                class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"></i>
-                            <input type="text" id="name-input" placeholder="홍길동"
-                                class="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-[#00A97A] focus:ring-2 focus:ring-[#00A97A]/20 transition-all">
-                        </div>
+
+                <div class="space-y-8">
+                    <div class="flex items-center gap-6">
+                        <label class="w-12 text-sm font-bold text-slate-600">성명</label>
+                        <input type="text" id="name-input" placeholder="성명을 입력하세요"
+                            class="flex-1 px-4 py-3 bg-white border border-slate-300 rounded-lg outline-none focus:border-[#9E2AB5] transition-all text-sm">
                     </div>
-                    <div class="space-y-1">
-                        <label class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Phone
-                            Number</label>
-                        <div class="relative">
-                            <i data-lucide="phone"
-                                class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"></i>
-                            <input type="tel" id="phone-input" placeholder="010-1234-5678"
-                                class="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-[#00A97A] focus:ring-2 focus:ring-[#00A97A]/20 transition-all">
-                        </div>
-                        <p class="text-[10px] text-slate-400 pl-1">Phone number is used for verification only</p>
+                    <div class="flex items-center gap-6">
+                        <label class="w-12 text-sm font-bold text-slate-600">연락처</label>
+                        <input type="tel" id="phone-input" placeholder="연락처를 입력하세요"
+                            class="flex-1 px-4 py-3 bg-white border border-slate-300 rounded-lg outline-none focus:border-[#9E2AB5] transition-all text-sm">
                     </div>
+
                     <button onclick="handleLookup()" id="find-btn"
-                        class="w-full bg-[#00A97A] text-white font-bold py-5 rounded-2xl shadow-lg hover:bg-[#008c66] active:scale-[0.98] transition-all">
-                        Check My Itinerary
+                        class="w-full bg-white border-2 border-slate-800 text-slate-800 font-bold py-4 rounded-xl shadow-sm hover:bg-slate-50 transition-all mt-12 text-sm">
+                        본인 인증
                     </button>
                 </div>
             </div>
 
             <!-- Result View (Personal Itinerary) -->
-            <div id="result-view" class="hidden slide-in space-y-6">
-                <!-- Welcome Header -->
-                <div class="flex flex-col items-center text-center">
-                    <div
-                        class="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center text-[#00A97A] mb-3">
-                        <i data-lucide="check-circle-2" class="w-8 h-8"></i>
-                    </div>
-                    <p class="text-slate-500">Welcome, <span id="res-name" class="font-bold text-slate-800">User</span>
-                    </p>
-                    <p id="res-dept" class="text-sm text-slate-400"></p>
+            <div id="result-view" class="hidden slide-in space-y-0">
+                <!-- User Tour Info -->
+                <div class="space-y-1 text-center pb-6 mb-6 border-b border-dashed border-slate-200">
+                    <h3 class="text-lg font-bold text-slate-800"><span id="res-name">User</span>님 투어 안내</h3>
+                    <p id="res-dept" class="text-sm text-slate-500 font-medium"></p>
+                    <p class="text-sm text-slate-600 mt-3 italic">선택투어는 <span id="res-activity-summary"
+                            class="font-bold text-[#9E2AB5]">Activity</span> 입니다.</p>
                 </div>
 
-                <!-- Activity Title (BB Violet) -->
-                <div
-                    class="bg-gradient-to-r from-[#9E2AB5]/10 to-[#9E2AB5]/5 rounded-2xl p-6 text-center border border-[#9E2AB5]/20">
-                    <div class="flex items-center justify-center gap-2 mb-2">
-                        <i data-lucide="map" class="w-5 h-5 text-[#9E2AB5]"></i>
-                        <span class="text-[10px] uppercase font-bold tracking-widest text-[#9E2AB5]">Your
-                            Activity</span>
-                    </div>
-                    <h2 id="res-activity" class="text-2xl font-black text-[#9E2AB5]">Activity Name</h2>
+                <!-- Violet Activity Banner -->
+                <div class="bg-[#9E2AB5] py-3 text-center mx-[-2rem] mb-8">
+                    <h2 class="text-white font-bold text-sm tracking-widest"><span
+                            id="res-activity-banner">Activity</span> 투어 안내</h2>
                 </div>
 
-                <!-- Logistics Card -->
-                <div class="bg-slate-50 border border-slate-200 rounded-2xl p-6 space-y-4">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <p class="text-[10px] uppercase text-slate-400 font-bold tracking-wider mb-1">Departure Time
-                            </p>
-                            <p id="res-time" class="text-2xl font-black text-[#00A97A]">09:00</p>
+                <!-- Logistics List -->
+                <div class="space-y-5 text-sm">
+                    <div class="flex items-center">
+                        <span class="w-24 font-bold text-slate-500">출발 시간</span>
+                        <span id="res-time" class="flex-1 font-bold text-slate-800">09:00</span>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="w-24 font-bold text-slate-500">집합 장소</span>
+                        <span id="res-location" class="flex-1 font-bold text-slate-800">1층 로비</span>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="w-24 font-bold text-slate-500">가이드</span>
+                        <span id="res-guide" class="flex-1 text-slate-700 font-medium">-</span>
+                    </div>
+
+                    <div class="pt-2">
+                        <span class="block font-bold text-slate-500 mb-3">일정 요약</span>
+                        <div id="timeline-container" class="space-y-3 pl-4 border-l-2 border-slate-50 ml-1">
+                            <!-- Items inserted via JS -->
                         </div>
-                        <div class="text-right">
-                            <p class="text-[10px] uppercase text-slate-400 font-bold tracking-wider mb-1">Meeting Point
-                            </p>
-                            <p id="res-location" class="text-lg font-bold text-slate-700">1층 로비</p>
-                        </div>
                     </div>
-                    <div class="border-t border-slate-200 pt-4">
-                        <p class="text-[10px] uppercase text-slate-400 font-bold tracking-wider mb-1">Guide Info</p>
-                        <p id="res-guide" class="text-sm font-medium text-slate-600">-</p>
-                    </div>
-                </div>
 
-                <!-- Timeline -->
-                <div class="space-y-3">
-                    <div class="flex items-center gap-2">
-                        <i data-lucide="route" class="w-4 h-4 text-[#00A97A]"></i>
-                        <span class="text-[10px] uppercase font-bold tracking-widest text-slate-400">Schedule</span>
-                    </div>
-                    <div id="timeline-container" class="space-y-4 pl-2">
-                        <!-- Timeline items will be inserted here -->
-                    </div>
-                </div>
-
-                <!-- Notice Box -->
-                <div id="notice-box" class="bg-amber-50 border-2 border-amber-200 rounded-2xl p-5 space-y-3">
-                    <div class="flex items-center gap-2 text-amber-700">
-                        <i data-lucide="alert-triangle" class="w-5 h-5"></i>
-                        <span class="text-sm font-bold uppercase tracking-wide">Notice</span>
-                    </div>
-                    <div class="space-y-2 text-sm text-amber-800">
-                        <div id="notice-supplies" class="flex items-start gap-2">
-                            <i data-lucide="backpack" class="w-4 h-4 mt-0.5 text-amber-600"></i>
-                            <span></span>
+                    <div id="notice-box" class="pt-6 border-t border-slate-100 space-y-3 hidden">
+                        <div id="notice-supplies" class="flex items-start">
+                            <span class="w-24 font-bold text-slate-500 flex-shrink-0">준비물</span>
+                            <span class="text-slate-700 font-medium"></span>
                         </div>
-                        <div id="notice-warning" class="flex items-start gap-2">
-                            <i data-lucide="info" class="w-4 h-4 mt-0.5 text-amber-600"></i>
-                            <span></span>
+                        <div id="notice-warning" class="flex items-start">
+                            <span class="w-24 font-bold text-slate-500 flex-shrink-0">주의사항</span>
+                            <span class="text-slate-700 font-medium"></span>
                         </div>
                     </div>
                 </div>
 
-                <button onclick="resetApp()"
-                    class="w-full py-3 text-slate-400 font-bold text-sm hover:text-slate-600 transition-colors">
-                    ← New Search
-                </button>
+                <div class="pt-12 text-center">
+                    <button onclick="resetApp()"
+                        class="text-slate-300 text-[10px] font-bold uppercase tracking-widest hover:text-slate-500 transition-colors">
+                        ← New Search
+                    </button>
+                </div>
             </div>
 
             <!-- Error View -->
-            <div id="error-view" class="hidden slide-in text-center space-y-6">
-                <div class="w-20 h-20 bg-rose-100 rounded-full flex items-center justify-center mx-auto">
-                    <i data-lucide="alert-circle" class="w-10 h-10 text-rose-500"></i>
+            <div id="error-view" class="hidden slide-in text-center py-12 space-y-6">
+                <div class="w-16 h-16 bg-rose-50 rounded-full flex items-center justify-center mx-auto">
+                    <i data-lucide="info" class="w-8 h-8 text-rose-400"></i>
                 </div>
-                <h2 class="text-2xl font-extrabold text-slate-800">No Record Found</h2>
-                <p class="text-slate-500">Phone number not found. Please check with the information desk.</p>
-                <button onclick="resetApp()"
-                    class="w-full bg-slate-800 text-white font-bold py-5 rounded-2xl hover:bg-slate-700 transition-colors">Try
-                    Again</button>
+                <h2 class="text-xl font-bold text-slate-800">정보를 찾을 수 없습니다</h2>
+                <p class="text-sm text-slate-400">성명과 연락처를 다시 확인해 주세요.</p>
+                <button onclick="showView('input-view')"
+                    class="w-full bg-slate-800 text-white font-bold py-4 rounded-xl text-sm">다시 시도하기</button>
             </div>
         </div>
-        <div class="bg-slate-50 border-t border-slate-100 py-6 text-center cursor-default select-none">
-            <p class="text-[9px] text-slate-300 uppercase tracking-[0.3em] font-black">Secure Cloud Portal v5.0</p>
+
+        <!-- App Footer -->
+        <div class="bg-white border-t border-slate-100 py-6 px-8 text-center mt-auto">
+            <div class="flex items-center justify-center gap-2 opacity-20 group grayscale">
+                <i data-lucide="calendar-days" class="w-3 h-3 text-slate-800"></i>
+                <span class="text-[9px] font-bold text-slate-800 uppercase tracking-[0.4em]">행사 logo</span>
+            </div>
         </div>
     </div>
 
@@ -474,9 +423,11 @@
 
             if (user) {
                 // Display user info
+                const activityName = user.activity_name || user.액티비티 || user.bus || 'Activity';
                 document.getElementById('res-name').textContent = user.name || user.이름 || nameInput;
                 document.getElementById('res-dept').textContent = user.department || user.부서 || '';
-                document.getElementById('res-activity').textContent = user.activity_name || user.액티비티 || user.bus || 'Activity';
+                document.getElementById('res-activity-summary').textContent = activityName;
+                document.getElementById('res-activity-banner').textContent = activityName;
                 document.getElementById('res-time').textContent = user.start_time || user.출발시간 || user.time || '-';
                 document.getElementById('res-location').textContent = user.meeting_point || user.집합장소 || '-';
                 document.getElementById('res-guide').textContent = user.guide_info || user['가이드 정보'] || '-';
@@ -490,14 +441,14 @@
                 ].filter(s => s && s.trim());
 
                 if (schedules.length > 0) {
-                    timelineContainer.innerHTML = schedules.map(s => `
-                        <div class="timeline-item">
-                            <div class="timeline-dot"></div>
-                            <p class="text-slate-700 font-medium">${s}</p>
+                    timelineContainer.innerHTML = schedules.map((s, idx) => `
+                        <div class="flex gap-3 text-slate-700">
+                            <span class="font-bold text-slate-300">${idx + 1}</span>
+                            <p class="font-medium">${s}</p>
                         </div>
                     `).join('');
                 } else {
-                    timelineContainer.innerHTML = '<p class="text-slate-400 text-sm">No schedule available</p>';
+                    timelineContainer.innerHTML = '<p class="text-slate-400 text-xs">No schedule available</p>';
                 }
 
                 // Handle notice box
@@ -507,10 +458,10 @@
 
                 if (supplies || notice) {
                     noticeBox.classList.remove('hidden');
-                    document.querySelector('#notice-supplies span').textContent = supplies ? `준비물: ${supplies}` : '';
-                    document.querySelector('#notice-warning span').textContent = notice ? `주의: ${notice}` : '';
-                    document.getElementById('notice-supplies').style.display = supplies ? 'flex' : 'none';
-                    document.getElementById('notice-warning').style.display = notice ? 'flex' : 'none';
+                    noticeBox.querySelector('#notice-supplies span').textContent = supplies || '-';
+                    noticeBox.querySelector('#notice-warning span').textContent = notice || '-';
+                    noticeBox.querySelector('#notice-supplies').style.display = supplies ? 'flex' : 'none';
+                    noticeBox.querySelector('#notice-warning').style.display = notice ? 'flex' : 'none';
                 } else {
                     noticeBox.classList.add('hidden');
                 }
