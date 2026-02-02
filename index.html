@@ -508,23 +508,22 @@
         };
 
         // ============================================
-        // DUAL-KEY LOOKUP (Name AND Phone) - Addressing PPT Slide 4 Q1
+        // PHONE-CENTRIC LOOKUP (Ease of Use)
         // ============================================
         window.handleLookup = async () => {
             const nameInput = document.getElementById('name-input').value.trim();
             const phoneInput = document.getElementById('phone-input').value;
             const sanitizedPhone = sanitizePhoneNumber(phoneInput);
 
-            if (!nameInput) {
-                alert("성명을 입력해주세요.");
+            if (!phoneInput) {
+                alert("연락처를 입력해주세요.");
                 return;
             }
 
-            // Find by BOTH Name and Sanitized Phone
+            // Find by Phone Number only (addressing user feedback for typing convenience)
             const user = PARTICIPANTS.find(u => {
-                const storedName = (u.name || u.이름 || '').trim();
                 const storedPhone = sanitizePhoneNumber(u.phone || u.휴대전화 || '');
-                return storedName === nameInput && storedPhone === sanitizedPhone;
+                return storedPhone === sanitizedPhone;
             });
 
             if (user) {
