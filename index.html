@@ -76,10 +76,16 @@
                     <div id="checkin-log" class="max-h-48 overflow-y-auto space-y-2 text-sm">
                         <p class="text-slate-400 text-center text-xs py-4">No check-ins yet</p>
                     </div>
-                    <button onclick="clearCheckins()"
-                        class="w-full mt-3 py-2 text-xs text-slate-400 hover:text-rose-500 transition-colors">
-                        Clear All Check-ins
-                    </button>
+                    <div class="flex gap-2 mt-3">
+                        <button onclick="exportCheckins()"
+                            class="flex-1 py-2 text-xs text-[#10B981] border border-[#10B981] rounded-lg hover:bg-[#10B981] hover:text-white transition-colors">
+                            Export CSV
+                        </button>
+                        <button onclick="clearCheckins()"
+                            class="flex-1 py-2 text-xs text-slate-400 border border-slate-200 rounded-lg hover:text-rose-500 hover:border-rose-500 transition-colors">
+                            Clear All
+                        </button>
+                    </div>
                 </div>
 
                 <button onclick="toggleAdmin()"
@@ -368,6 +374,48 @@
                 await loadCheckins();
             } catch (error) {
                 console.log('Failed to clear check-ins:', error);
+            }
+        };
+
+        // Export check-ins as CSV
+        window.exportCheckins = async () => {
+            try {
+                const checkinsRef = collection(db, 'artifacts', appId, 'public', 'data', 'checkins');
+                const q = query(checkinsRef, orderBy('checkedInAt', 'desc'));
+                const snapshot = await getDocs(q);
+                const checkins = snapshot.docs.map(d => d.data());
+
+                if (checkins.length === 0) {
+                    alert('No check-ins to export');
+                    return;
+                }
+
+                // Create CSV content
+                const headers = ['Name', 'Phone', 'Affiliation', 'Bus Assignment', 'Departure', 'Checked In At'];
+                const rows = checkins.map(c => [
+                    c.name,
+                    c.phone,
+                    c.aff || '',
+                    c.bus,
+                    c.time,
+                    new Date(c.checkedInAt).toLocaleString('ko-KR')
+                ]);
+
+                const csvContent = [headers, ...rows]
+                    .map(row => row.map(cell => `"${cell}"`).join(','))
+                    .join('\n');
+
+                // Download file
+                const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `checkins_${new Date().toISOString().slice(0, 10)}.csv`;
+                link.click();
+                URL.revokeObjectURL(url);
+            } catch (error) {
+                console.log('Failed to export check-ins:', error);
+                alert('Export failed');
             }
         };
 
