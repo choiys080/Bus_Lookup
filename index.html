@@ -313,13 +313,30 @@
         // ============================================
         function sanitizePhoneNumber(input) {
             if (!input) return '';
-            const hasPlus = input.trim().startsWith('+');
-            const digits = input.replace(/\D/g, '');
+            const trimmed = input.trim();
+            const hasPlus = trimmed.startsWith('+');
+            let digits = input.replace(/\D/g, '');
 
+            // Handle +82 Korean country code (e.g., +82 10-1234-5678 → 1012345678)
+            if (hasPlus && digits.startsWith('82')) {
+                digits = digits.substring(2);  // Remove 82 prefix
+                // If it starts with 10, keep it as is (already correct format)
+                if (digits.startsWith('10')) {
+                    return digits;  // 1012345678
+                }
+                // If it starts with 010, strip the leading 0
+                if (digits.startsWith('010')) {
+                    return digits.substring(1);  // 1012345678
+                }
+                return digits;
+            }
+
+            // Handle other international numbers (keep + prefix)
             if (hasPlus) {
                 return '+' + digits;  // +97699990815
             }
 
+            // Handle Korean 010 prefix
             if (digits.startsWith('010')) {
                 return digits.substring(1);  // 1012345678
             }
