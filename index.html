@@ -140,7 +140,7 @@
                     id="drop-zone">
                     <i data-lucide="upload-cloud" class="w-8 h-8 mx-auto text-slate-400 mb-2"></i>
                     <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Update Participant CSV</p>
-                    <input type="file" id="csv-upload" accept=".csv" class="hidden">
+                    <input type="file" id="csv-upload" accept=".csv" class="hidden" aria-label="Upload Participant CSV">
                 </div>
                 <div id="upload-msg" class="text-center text-xs font-bold uppercase tracking-widest h-4"></div>
 
@@ -358,7 +358,7 @@
 
     <script>
         // ============================================
-        // PHONE SANITIZATION (Mongolian Trap)
+        // PHONE SANITIZATION
         // ============================================
         function sanitizePhoneNumber(input) {
             if (!input) return '';
@@ -476,28 +476,70 @@
 
         let PARTICIPANTS = [];
         let currentUser = null;
+        let dataLoadRetries = 0;
+        const MAX_RETRIES = 3;
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUser = user;
-                await loadGlobalData();
-                showView('input-view');
+                dataLoadRetries = 0;
+                await loadGlobalDataWithRetry();
             } else {
-                await signInAnonymously(auth);
+                try {
+                    await signInAnonymously(auth);
+                } catch (authError) {
+                    console.error('Anonymous auth failed:', authError);
+                    showConnectionError('인증에 실패했습니다. 페이지를 새로고침 해주세요.');
+                }
             }
         });
 
-        async function loadGlobalData() {
-            if (!currentUser) return;
-            try {
-                const dataCol = collection(db, 'artifacts', appId, 'public', 'data', 'participants');
-                const snapshot = await getDocs(dataCol);
-                PARTICIPANTS = snapshot.docs.map(d => d.data());
-                console.log(`Loaded ${PARTICIPANTS.length} participants`);
-            } catch (error) {
-                console.log('Cloud sync not available, running in local mode');
-                showView('input-view');
+        async function loadGlobalDataWithRetry() {
+            while (dataLoadRetries < MAX_RETRIES) {
+                try {
+                    await loadGlobalData();
+                    if (PARTICIPANTS.length > 0) {
+                        showView('input-view');
+                        return; // Success!
+                    }
+                } catch (error) {
+                    console.error(`Data load attempt ${dataLoadRetries + 1} failed:`, error);
+                }
+                dataLoadRetries++;
+                if (dataLoadRetries < MAX_RETRIES) {
+                    await new Promise(r => setTimeout(r, 1000 * dataLoadRetries)); // Exponential backoff
+                }
             }
+            // All retries failed
+            console.error('All data load attempts failed');
+            showConnectionError('데이터를 불러올 수 없습니다. 네트워크를 확인하고 페이지를 새로고침 해주세요.');
+        }
+
+        async function loadGlobalData() {
+            if (!currentUser) throw new Error('No authenticated user');
+
+            // Force token refresh to prevent stale token issues
+            try {
+                await currentUser.getIdToken(true);
+            } catch (tokenError) {
+                console.warn('Token refresh failed, attempting re-auth...');
+                await signInAnonymously(auth);
+                return; // onAuthStateChanged will re-trigger loadGlobalData
+            }
+
+            const dataCol = collection(db, 'artifacts', appId, 'public', 'data', 'participants');
+            const snapshot = await getDocs(dataCol);
+            PARTICIPANTS = snapshot.docs.map(d => d.data());
+            console.log(`Loaded ${PARTICIPANTS.length} participants`);
+        }
+
+        function showConnectionError(message) {
+            const errorView = document.getElementById('error-view');
+            const title = errorView.querySelector('h2');
+            const desc = errorView.querySelector('p');
+            if (title) title.textContent = '연결 오류';
+            if (desc) desc.textContent = message;
+            showView('error-view');
         }
 
         window.showView = (id) => {
