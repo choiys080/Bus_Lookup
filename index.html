@@ -157,12 +157,12 @@
 
                     <div id="attendance-status-container" class="space-y-4">
                         <div class="flex gap-2 px-1 overflow-x-auto pb-1 no-scrollbar">
+                            <button onclick="sortAttendance('status')" id="sort-status-btn"
+                                class="flex-none px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all border-2 border-[#00A97A] bg-[#00A97A] text-white">Status</button>
                             <button onclick="sortAttendance('name')" id="sort-name-btn"
-                                class="flex-none px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all border-2 border-[#00A97A] bg-[#00A97A] text-white">Name</button>
+                                class="flex-none px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all border-2 border-slate-100 bg-white text-slate-400">Name</button>
                             <button onclick="sortAttendance('course')" id="sort-course-btn"
                                 class="flex-none px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all border-2 border-slate-100 bg-white text-slate-400">Course</button>
-                            <button onclick="sortAttendance('status')" id="sort-status-btn"
-                                class="flex-none px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all border-2 border-slate-100 bg-white text-slate-400">Status</button>
                         </div>
 
                         <div class="flex justify-between items-center px-2">
@@ -690,7 +690,7 @@
         };
 
         let currentCheckins = [];
-        let currentSortMode = 'name'; // 'name', 'course', 'status'
+        let currentSortMode = 'status'; // 'name', 'course', 'status'
 
         // Load check-ins and update dashboard
         async function loadCheckins() {
