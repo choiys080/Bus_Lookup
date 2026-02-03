@@ -147,21 +147,15 @@
                 <div class="border-t border-slate-100 pt-6">
                     <!-- Tabs -->
                     <div class="flex gap-4 mb-4 border-b border-slate-50">
-                        <button onclick="switchAdminTab('log')" id="tab-log-btn"
-                            class="pb-2 text-[10px] font-black uppercase tracking-widest text-[#00A97A] border-b-2 border-[#00A97A]">Check-in
-                            Log</button>
                         <button onclick="switchAdminTab('status')" id="tab-status-btn"
-                            class="pb-2 text-[10px] font-black uppercase tracking-widest text-slate-300">Attendance
+                            class="pb-2 text-[10px] font-black uppercase tracking-widest text-[#00A97A] border-b-2 border-[#00A97A]">Attendance
                             Status</button>
+                        <button onclick="switchAdminTab('log')" id="tab-log-btn"
+                            class="pb-2 text-[10px] font-black uppercase tracking-widest text-slate-300">Check-in
+                            Log</button>
                     </div>
 
-                    <div id="checkin-log-container" class="space-y-2">
-                        <div id="checkin-log" class="max-h-60 overflow-y-auto space-y-2 text-xs">
-                            <p class="text-slate-400 text-center py-4">Loading log...</p>
-                        </div>
-                    </div>
-
-                    <div id="attendance-status-container" class="hidden space-y-4">
+                    <div id="attendance-status-container" class="space-y-4">
                         <div class="flex gap-2 px-1 overflow-x-auto pb-1 no-scrollbar">
                             <button onclick="sortAttendance('name')" id="sort-name-btn"
                                 class="flex-none px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all border-2 border-[#00A97A] bg-[#00A97A] text-white">Name</button>
@@ -178,6 +172,12 @@
                         </div>
                         <div id="attendance-list" class="max-h-80 overflow-y-auto space-y-2 text-xs">
                             <p class="text-slate-400 text-center py-4">Loading status...</p>
+                        </div>
+                    </div>
+
+                    <div id="checkin-log-container" class="hidden space-y-2">
+                        <div id="checkin-log" class="max-h-60 overflow-y-auto space-y-2 text-xs">
+                            <p class="text-slate-400 text-center py-4">Loading log...</p>
                         </div>
                     </div>
 
