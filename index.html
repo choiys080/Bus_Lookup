@@ -161,13 +161,22 @@
                         </div>
                     </div>
 
-                    <div id="attendance-status-container" class="hidden space-y-2">
-                        <div class="flex justify-between items-center px-2 mb-2">
+                    <div id="attendance-status-container" class="hidden space-y-4">
+                        <div class="flex gap-2 px-1 overflow-x-auto pb-1 no-scrollbar">
+                            <button onclick="sortAttendance('name')" id="sort-name-btn"
+                                class="flex-none px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all border-2 border-[#00A97A] bg-[#00A97A] text-white">Name</button>
+                            <button onclick="sortAttendance('course')" id="sort-course-btn"
+                                class="flex-none px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all border-2 border-slate-100 bg-white text-slate-400">Course</button>
+                            <button onclick="sortAttendance('status')" id="sort-status-btn"
+                                class="flex-none px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all border-2 border-slate-100 bg-white text-slate-400">Status</button>
+                        </div>
+
+                        <div class="flex justify-between items-center px-2">
                             <span
                                 class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Participant</span>
                             <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Status</span>
                         </div>
-                        <div id="attendance-list" class="max-h-60 overflow-y-auto space-y-2 text-xs">
+                        <div id="attendance-list" class="max-h-80 overflow-y-auto space-y-2 text-xs">
                             <p class="text-slate-400 text-center py-4">Loading status...</p>
                         </div>
                     </div>
@@ -681,6 +690,7 @@
         };
 
         let currentCheckins = [];
+        let currentSortMode = 'name'; // 'name', 'course', 'status'
 
         // Load check-ins and update dashboard
         async function loadCheckins() {
@@ -722,6 +732,22 @@
         }
 
         // Render the full list with check-in status
+        window.sortAttendance = (mode) => {
+            currentSortMode = mode;
+            // Update UI
+            ['name', 'course', 'status'].forEach(m => {
+                const btn = document.getElementById(`sort-${m}-btn`);
+                if (m === mode) {
+                    btn.classList.add('bg-[#00A97A]', 'text-white', 'border-[#00A97A]');
+                    btn.classList.remove('bg-white', 'text-slate-400', 'border-slate-100');
+                } else {
+                    btn.classList.remove('bg-[#00A97A]', 'text-white', 'border-[#00A97A]');
+                    btn.classList.add('bg-white', 'text-slate-400', 'border-slate-100');
+                }
+            });
+            renderAttendanceList();
+        };
+
         function renderAttendanceList() {
             const listEl = document.getElementById('attendance-list');
 
@@ -737,18 +763,45 @@
                 return;
             }
 
-            listEl.innerHTML = PARTICIPANTS.map(p => {
+            // Create data for sorting
+            const displayData = PARTICIPANTS.map(p => {
                 const sPhone = sanitizePhoneNumber(p.phone || p.휴대전화 || '');
-                const check = checkedMap.get(sPhone);
-                const isChecked = !!check;
+                return {
+                    ...p,
+                    sPhone,
+                    isChecked: checkedMap.has(sPhone)
+                };
+            });
 
+            // Apply sorting
+            displayData.sort((a, b) => {
+                if (currentSortMode === 'course') {
+                    const activityA = a.activity_name || a.액티비티 || '';
+                    const activityB = b.activity_name || b.액티비티 || '';
+                    return activityA.localeCompare(activityB, 'ko-KR');
+                } else if (currentSortMode === 'status') {
+                    if (a.isChecked === b.isChecked) {
+                        return (a.name || a.이름 || '').localeCompare(b.name || b.이름 || '', 'ko-KR');
+                    }
+                    return a.isChecked ? -1 : 1; // Checked first
+                } else {
+                    // Default: Name
+                    return (a.name || a.이름 || '').localeCompare(b.name || b.이름 || '', 'ko-KR');
+                }
+            });
+
+            listEl.innerHTML = displayData.map(p => {
                 return `<div class="flex justify-between items-center border-b border-slate-50 py-2 px-1">
                     <div class="flex flex-col">
                         <span class="font-bold text-slate-700">${p.name || p.이름}</span>
-                        <span class="text-[9px] text-slate-400 font-medium">${p.department || p.부서 || '-'}</span>
+                        <div class="flex items-center gap-1.5 mt-0.5">
+                            <span class="text-[9px] text-[#9E2AB5] font-black uppercase tracking-tighter">${(p.activity_name || p.액티비티 || '').split(':')[0]}</span>
+                            <span class="text-[9px] text-slate-300 font-medium">|</span>
+                            <span class="text-[9px] text-slate-400 font-medium">${p.department || p.부서 || '-'}</span>
+                        </div>
                     </div>
                     <div>
-                        ${isChecked
+                        ${p.isChecked
                         ? `<span class="px-2 py-0.5 bg-[#00A97A]/10 text-[#00A97A] rounded-full text-[9px] font-black uppercase">Checked</span>`
                         : `<span class="px-2 py-0.5 bg-slate-100 text-slate-400 rounded-full text-[9px] font-black uppercase">Pending</span>`
                     }
