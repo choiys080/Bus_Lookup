@@ -783,7 +783,7 @@
                     if (a.isChecked === b.isChecked) {
                         return (a.name || a.이름 || '').localeCompare(b.name || b.이름 || '', 'ko-KR');
                     }
-                    return a.isChecked ? -1 : 1; // Checked first
+                    return a.isChecked ? 1 : -1; // Pending first (false < true)
                 } else {
                     // Default: Name
                     return (a.name || a.이름 || '').localeCompare(b.name || b.이름 || '', 'ko-KR');
