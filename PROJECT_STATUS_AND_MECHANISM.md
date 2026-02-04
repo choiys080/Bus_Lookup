@@ -14,12 +14,15 @@ We have successfully built and verified the core application. The system is a **
 
 ### 🚀 Deployment: GitHub Pages
 
-The project is hosted on **GitHub Pages** for stability and ease of access.
+The project is hosted on **GitHub Pages**.
 
 * **Repository**: [choiys080/Bus_Lookup](https://github.com/choiys080/Bus_Lookup)
 * **Live Site**: [https://choiys080.github.io/Bus_Lookup/](https://choiys080.github.io/Bus_Lookup/)
 
-**(Note: GitHub Pages must be enabled manually in the repo settings > Pages if not already active).**
+### 📂 File Versions
+
+* **`index.html`**: The live version (Currently deployed from `2602041619.html`)
+* **`index_old.html`**: Backup of the original version.
 
 ---
 
