@@ -41,7 +41,7 @@
             }
         }
 
-        /* Timeline styling */
+        /* Timeline & Scrollbar */
         .timeline-item {
             position: relative;
             padding-left: 2rem;
@@ -61,19 +61,6 @@
             display: none;
         }
 
-        .timeline-dot {
-            position: absolute;
-            left: 0;
-            top: 0.25rem;
-            width: 1rem;
-            height: 1rem;
-            border-radius: 50%;
-
-            background: #00A97A;
-            border: 3px solid white;
-            box-shadow: 0 0 0 2px #00A97A;
-        }
-
         .glass {
             background: rgba(255, 255, 255, 0.7);
             backdrop-filter: blur(12px);
@@ -89,7 +76,6 @@
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* Custom scrollbar for premium feel */
         ::-webkit-scrollbar {
             width: 5px;
         }
@@ -106,13 +92,23 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #cbd5e1;
         }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
     </style>
 </head>
 
 <body class="bg-slate-100 min-h-screen flex flex-col items-center p-4 sm:p-8">
     <div id="app"
         class="w-full max-w-md bg-white rounded-[3rem] shadow-premium border border-slate-200/60 min-h-[600px] flex flex-col relative overflow-hidden">
-        <!-- Main Header: Sleek Corporate Branding -->
+
+        <!-- HEADER -->
         <div
             class="bg-white/80 backdrop-blur-md px-8 py-7 flex justify-between items-center relative border-b border-slate-100/10 z-50">
             <div class="flex items-center gap-4">
@@ -136,21 +132,18 @@
             </div>
         </div>
 
-        <!-- Key Visual Banner: Premium Hero -->
-        <!-- Geometric Accents -->
+        <!-- DECORATION -->
         <div class="absolute -top-10 -left-10 w-40 h-40 bg-[#00A97A]/10 rounded-full blur-3xl"></div>
         <div class="absolute -bottom-10 -right-10 w-40 h-40 bg-[#9E2AB5]/10 rounded-full blur-3xl"></div>
 
         <div class="p-8 relative min-h-[400px] flex flex-col" id="content-area">
-            <!-- Loading View: Premium Sync -->
+
+            <!-- VIEW: LOADING -->
             <div id="loading-view" class="flex flex-col items-center justify-center py-24 space-y-8">
                 <div class="relative">
                     <div class="w-16 h-16 border-[3px] border-slate-100 rounded-full"></div>
                     <div
                         class="absolute inset-0 w-16 h-16 border-[3px] border-[#00A97A] border-t-transparent rounded-full animate-spin">
-                    </div>
-                    <div class="absolute inset-x-0 -bottom-1 flex justify-center">
-                        <div class="w-1.5 h-1.5 bg-[#00A97A] rounded-full animate-pulse"></div>
                     </div>
                 </div>
                 <div class="text-center space-y-2">
@@ -160,8 +153,8 @@
                 </div>
             </div>
 
-            <!-- Admin View: Sleek Dashboard -->
-            <div id="admin-view" class="hidden slide-in space-y-8">
+            <!-- VIEW: ADMIN DASHBOARD -->
+            <div id="admin-view" class="hidden slide-in space-y-6">
                 <div class="text-center">
                     <h2 class="text-xl font-heading font-black text-slate-900 tracking-tight uppercase">Admin Dashboard
                     </h2>
@@ -169,7 +162,7 @@
                     </p>
                 </div>
 
-                <!-- Compact Stats: Management Bar -->
+                <!-- Stats Summary -->
                 <div class="flex items-center gap-3 bg-slate-50 p-2 rounded-2xl border border-slate-100">
                     <div
                         class="flex-1 flex items-center justify-between px-4 py-3 bg-white rounded-xl border border-slate-50 shadow-sm">
@@ -184,28 +177,50 @@
                     </div>
                 </div>
 
+                <!-- Detailed Stats Accordion -->
+                <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                    <div class="flex items-center justify-between mb-3 cursor-pointer" onclick="toggleStats()">
+                        <h4
+                            class="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                            <i data-lucide="bar-chart-2" class="w-3 h-3"></i> Activity Statistics
+                        </h4>
+                        <i data-lucide="chevron-down" id="stats-chevron"
+                            class="w-3 h-3 text-slate-400 transition-transform"></i>
+                    </div>
+                    <div id="stats-container"
+                        class="hidden grid grid-cols-2 gap-2 max-h-40 overflow-y-auto custom-scrollbar">
+                        <!-- Stats injected here -->
+                    </div>
+                </div>
 
-                <div class="">
-                    <!-- Tabs & Sort: Unified Utility Bar -->
-                    <div class="flex items-center justify-between mb-6 gap-4">
+                <!-- List & Search -->
+                <div class="space-y-4">
+                    <div class="relative group">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400"></i>
+                        </div>
+                        <input type="text" id="admin-search-input" onkeyup="filterAdminList()"
+                            placeholder="Search Name or Phone..."
+                            class="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[10px] font-bold text-slate-700 outline-none focus:border-[#00A97A] focus:bg-white transition-soft placeholder:text-slate-300 uppercase tracking-wider">
+                    </div>
+
+                    <div class="flex items-center justify-between gap-4">
                         <div class="flex bg-slate-100 p-1 rounded-xl">
                             <button onclick="switchAdminTab('status')" id="tab-status-btn"
-                                class="px-3 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-lg transition-soft bg-white text-[#00A97A] shadow-sm">Status</button>
+                                class="px-3 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-lg transition-soft bg-white text-[#00A97A] shadow-sm">List</button>
                             <button onclick="switchAdminTab('log')" id="tab-log-btn"
                                 class="px-3 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-lg transition-soft text-slate-400 hover:text-slate-600">Log</button>
                         </div>
                         <div class="flex gap-1.5 overflow-x-auto no-scrollbar">
                             <button onclick="sortAttendance('status')" id="sort-status-btn"
-                                class="px-3 py-1.5 bg-[#00A97A] text-white text-[8px] font-black uppercase tracking-widest rounded-lg shadow-md shadow-[#00A97A]/20 transition-soft">By
-                                Status</button>
+                                class="px-3 py-1.5 bg-[#00A97A] text-white text-[8px] font-black uppercase tracking-widest rounded-lg shadow-md shadow-[#00A97A]/20 transition-soft">Status</button>
                             <button onclick="sortAttendance('name')" id="sort-name-btn"
-                                class="px-3 py-1.5 bg-white border border-slate-100 text-slate-400 text-[8px] font-black uppercase tracking-widest rounded-lg transition-soft">By
-                                Name</button>
+                                class="px-3 py-1.5 bg-white border border-slate-100 text-slate-400 text-[8px] font-black uppercase tracking-widest rounded-lg transition-soft">Name</button>
                         </div>
                     </div>
 
                     <div id="attendance-status-container">
-                        <div id="attendance-list" class="max-h-80 overflow-y-auto space-y-3 pr-2 custom-scrollbar">
+                        <div id="attendance-list" class="max-h-64 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
                             <p class="text-slate-400 text-center py-10 text-[10px] font-bold uppercase tracking-widest">
                                 Loading status...</p>
                         </div>
@@ -213,13 +228,14 @@
                 </div>
 
                 <div id="checkin-log-container" class="hidden space-y-3">
-                    <div id="checkin-log" class="max-h-60 overflow-y-auto space-y-2 pr-2 custom-scrollbar text-[10px]">
-                        <p class="text-slate-400 text-center py-10 font-bold uppercase tracking-widest">Loading
-                            log...</p>
+                    <div id="checkin-log" class="max-h-64 overflow-y-auto space-y-2 pr-2 custom-scrollbar text-[10px]">
+                        <p class="text-slate-400 text-center py-10 font-bold uppercase tracking-widest">Loading log...
+                        </p>
                     </div>
                 </div>
 
-                <div id="admin-actions-toolbar" class="flex gap-2 mt-6">
+                <!-- Admin Actions -->
+                <div id="admin-actions-toolbar" class="flex gap-2 mt-4">
                     <button onclick="exportFullReport()"
                         class="flex-1 py-3 text-[9px] font-black text-slate-500 bg-white rounded-xl border border-slate-100 shadow-sm hover:border-[#00A97A] hover:text-[#00A97A] transition-soft uppercase tracking-widest">
                         <i data-lucide="download" class="w-3 h-3 inline-block mr-1 mb-0.5"></i> Export
@@ -230,32 +246,32 @@
                     </button>
                 </div>
 
-                <div class="space-y-4 pt-6">
-                    <div class="bg-slate-50 border border-slate-100 rounded-2xl p-6 text-center hover:bg-slate-100/50 cursor-pointer transition-soft group"
+                <!-- CSV Upload -->
+                <div class="space-y-4 pt-4">
+                    <div class="bg-slate-50 border border-slate-100 rounded-2xl p-4 text-center hover:bg-slate-100/50 cursor-pointer transition-soft group"
                         id="drop-zone">
                         <div class="flex items-center justify-center gap-3">
                             <i data-lucide="upload-cloud" class="w-4 h-4 text-slate-400 group-hover:text-[#00A97A]"></i>
-                            <p class="text-[9px] text-slate-500 font-black uppercase tracking-[0.2em]">Update
-                                Participant
-                                Database (CSV)</p>
+                            <p class="text-[9px] text-slate-500 font-black uppercase tracking-[0.2em]">Update Database
+                                (CSV)</p>
                         </div>
                         <input type="file" id="csv-upload" accept=".csv" class="hidden"
                             aria-label="Upload Participant CSV">
                     </div>
                     <div id="upload-msg"
                         class="text-center text-[10px] font-black uppercase tracking-widest h-4 text-[#00A97A]"></div>
-
                     <button onclick="showView('input-view')"
                         class="w-full py-5 bg-slate-900 text-white rounded-2xl font-black text-[10px] tracking-[0.3em] uppercase shadow-2xl hover:-translate-y-1 transition-soft">EXIT
                         CONSOLE</button>
                 </div>
             </div>
 
-            <!-- Input View: Premium & Sleek -->
+            <!-- VIEW: INPUT (LOGIN) -->
             <div id="input-view" class="hidden slide-in flex flex-col flex-1">
                 <div class="space-y-10">
                     <div class="space-y-6">
-                        <div class="space-y-2">
+                        <!-- NAME INPUT HIDDEN HERE (Preserved for future use) -->
+                        <div class="space-y-2 hidden">
                             <label
                                 class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Full
                                 Name</label>
@@ -268,17 +284,29 @@
                                     class="w-full pl-12 pr-5 py-4 bg-slate-50 border border-slate-100/50 rounded-2xl focus:ring-4 focus:ring-[#00A97A]/10 focus:border-[#00A97A] outline-none transition-soft placeholder:text-slate-300 font-semibold text-slate-800">
                             </div>
                         </div>
+
                         <div class="space-y-2">
                             <label
                                 class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Mobile
                                 Number</label>
-                            <div class="relative group">
-                                <div
-                                    class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none transition-soft group-focus-within:text-[#00A97A]">
-                                    <i data-lucide="phone" class="w-5 h-5 text-slate-300"></i>
+                            <div class="flex gap-2">
+                                <!-- Country Code -->
+                                <div class="relative w-24 group">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <span class="text-slate-400 font-bold text-sm">+</span>
+                                    </div>
+                                    <input type="tel" id="country-code-input" value="82"
+                                        class="w-full pl-6 pr-3 py-4 bg-slate-50 border border-slate-100/50 rounded-2xl focus:ring-4 focus:ring-[#00A97A]/10 focus:border-[#00A97A] outline-none transition-soft font-semibold text-slate-800 text-center">
                                 </div>
-                                <input type="tel" id="phone-input" placeholder="010-0000-0000"
-                                    class="w-full pl-12 pr-5 py-4 bg-slate-50 border border-slate-100/50 rounded-2xl focus:ring-4 focus:ring-[#00A97A]/10 focus:border-[#00A97A] outline-none transition-soft placeholder:text-slate-300 font-semibold text-slate-800">
+                                <!-- Phone Body -->
+                                <div class="relative flex-1 group">
+                                    <div
+                                        class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none transition-soft group-focus-within:text-[#00A97A]">
+                                        <i data-lucide="phone" class="w-5 h-5 text-slate-300"></i>
+                                    </div>
+                                    <input type="tel" id="phone-input" placeholder="010-0000-0000"
+                                        class="w-full pl-12 pr-5 py-4 bg-slate-50 border border-slate-100/50 rounded-2xl focus:ring-4 focus:ring-[#00A97A]/10 focus:border-[#00A97A] outline-none transition-soft placeholder:text-slate-300 font-semibold text-slate-800">
+                                </div>
                             </div>
                         </div>
 
@@ -288,14 +316,11 @@
                             <i data-lucide="chevron-right" class="w-5 h-5"></i>
                         </button>
                     </div>
-
-                    <!-- Footer Corporate Accents -->
                 </div>
             </div>
 
-            <!-- Result View: High-End Personal Itinerary -->
+            <!-- VIEW: RESULT (ITINERARY) -->
             <div id="result-view" class="hidden slide-in space-y-0 flex-1">
-                <!-- User Profile Header -->
                 <div class="text-center pb-10 mb-8 border-b border-slate-100 relative">
                     <div class="space-y-2">
                         <h3 class="text-3xl font-heading font-black text-slate-900 tracking-tight leading-tight"><span
@@ -317,25 +342,28 @@
                     </div>
                 </div>
 
-                <!-- Course Highlight Card -->
-                <div class="mb-8 group">
-                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">Your Activity
-                    </p>
-                    <div
-                        class="bg-gradient-to-tr from-slate-900 to-slate-800 rounded-3xl p-6 shadow-2xl relative overflow-hidden transition-soft group-hover:scale-[1.01]">
-                        <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-white/5 rounded-full blur-2xl"></div>
-                        <div class="z-10 relative">
-                            <span
-                                class="text-white/40 text-[9px] font-black uppercase tracking-widest block mb-2">Selected
-                                Course</span>
-                            <h4 id="res-activity-detail"
-                                class="text-xl font-heading font-bold text-white tracking-tight leading-snug">A코스 :
-                                한라산챌린지 (영실코스)</h4>
-                        </div>
+                <!-- BANNER SECTION: REPLACED GRADIENT WITH IMAGE -->
+                <div class="mb-8 group relative rounded-3xl overflow-hidden shadow-2xl h-48">
+                    <!-- BACKGROUND IMAGE (Replace the src below with your actual image URL) -->
+                    <img src="https://images.unsplash.com/photo-1548115184-bc6544d06a58?q=80&w=2070&auto=format&fit=crop"
+                        alt="Activity Banner"
+                        class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+
+                    <!-- DARK OVERLAY (So text is readable) -->
+                    <div class="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent">
+                    </div>
+
+                    <!-- TEXT CONTENT -->
+                    <div class="absolute bottom-0 left-0 p-6 z-10 w-full">
+                        <span
+                            class="text-[#00A97A] text-[10px] font-black uppercase tracking-widest block mb-1 bg-white/10 backdrop-blur-md inline-block px-2 py-1 rounded-lg">Selected
+                            Course</span>
+                        <h4 id="res-activity-detail"
+                            class="text-xl font-heading font-bold text-white tracking-tight leading-snug drop-shadow-md">
+                            Activity Name</h4>
                     </div>
                 </div>
 
-                <!-- Logistics & Details: Modern Grid -->
                 <div class="space-y-10">
                     <div class="grid grid-cols-2 gap-4">
                         <div
@@ -359,7 +387,7 @@
                             <span
                                 class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Meeting
                                 Point</span>
-                            <span id="res-location" class="text-xs font-bold text-slate-900 truncate block">1층 로비</span>
+                            <span id="res-location" class="text-xs font-bold text-slate-900 truncate block">Lobby</span>
                         </div>
                     </div>
 
@@ -392,9 +420,7 @@
                                     class="text-[8px] font-black text-[#00A97A] uppercase tracking-widest">Real-time</span>
                             </div>
                         </div>
-                        <div id="timeline-container" class="space-y-0 relative">
-                            <!-- Items inserted via JS -->
-                        </div>
+                        <div id="timeline-container" class="space-y-0 relative"></div>
                     </div>
 
                     <div id="notice-box" class="hidden pt-6">
@@ -433,16 +459,12 @@
                 </div>
             </div>
 
-            <!-- Error View: Premium Feedback -->
+            <!-- VIEW: ERROR -->
             <div id="error-view"
                 class="hidden slide-in flex flex-col items-center justify-center py-16 px-4 text-center space-y-8">
                 <div class="relative">
                     <div class="w-20 h-20 bg-rose-50 rounded-[2rem] flex items-center justify-center mx-auto shadow-sm">
                         <i data-lucide="alert-triangle" class="w-10 h-10 text-rose-400"></i>
-                    </div>
-                    <div
-                        class="absolute -right-2 -bottom-2 w-8 h-8 bg-white rounded-xl shadow-lg flex items-center justify-center border border-rose-50">
-                        <i data-lucide="help-circle" class="w-4 h-4 text-rose-300"></i>
                     </div>
                 </div>
                 <div class="space-y-2">
@@ -457,9 +479,7 @@
             </div>
         </div>
 
-        <!-- App Footer -->
-        <!-- App Footer Info -->
-        <!-- App Footer Info -->
+        <!-- FOOTER -->
         <div class="py-12 px-10 text-center mt-auto">
             <div class="flex flex-col items-center gap-4">
                 <div
@@ -475,7 +495,7 @@
         </div>
     </div>
 
-    <!-- Password Modal: Premium Overlay -->
+    <!-- ADMIN PASSWORD MODAL -->
     <div id="password-modal"
         class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-6">
         <div
@@ -488,14 +508,12 @@
                 <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-1">Management Console
                     Authentication</p>
             </div>
-
             <div class="space-y-4">
                 <input type="password" id="password-input" placeholder="ACCESS KEY"
                     class="w-full px-6 py-5 bg-slate-50 border border-slate-200 rounded-2xl text-center font-black text-xs tracking-[0.3em] outline-none focus:border-[#00A97A] focus:bg-white transition-soft placeholder:text-slate-300">
                 <p id="password-error"
                     class="hidden text-rose-500 text-[10px] font-black text-center uppercase tracking-widest">Validation
                     Failed. Retry.</p>
-
                 <div class="flex gap-3 pt-4">
                     <button onclick="cancelPassword()"
                         class="flex-1 py-4 bg-slate-100 text-slate-400 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-200 transition-soft">Close</button>
@@ -506,108 +524,15 @@
         </div>
     </div>
 
-    <script>
-        // ============================================
-        // PHONE SANITIZATION
-        // ============================================
-        function sanitizePhoneNumber(input) {
-            if (!input) return '';
-            const trimmed = input.trim();
-            const hasPlus = trimmed.startsWith('+');
-            let digits = input.replace(/\D/g, '');
-
-            // Handle +82 Korean country code (e.g., +82 10-1234-5678 → 1012345678)
-            if (hasPlus && digits.startsWith('82')) {
-                digits = digits.substring(2);  // Remove 82 prefix
-                // If it starts with 10, keep it as is (already correct format)
-                if (digits.startsWith('10')) {
-                    return digits;  // 1012345678
-                }
-                // If it starts with 010, strip the leading 0
-                if (digits.startsWith('010')) {
-                    return digits.substring(1);  // 1012345678
-                }
-                return digits;
-            }
-
-            // Handle other international numbers (keep + prefix)
-            if (hasPlus) {
-                return '+' + digits;  // +97699990815
-            }
-
-            // Handle Korean 010 prefix
-            if (digits.startsWith('010')) {
-                return digits.substring(1);  // 1012345678
-            }
-
-            return digits;
-        }
-
-        // ============================================
-        // ADMIN PASSWORD HANDLING
-        // ============================================
-        const ADMIN_PASSWORD = 'admin123';
-
-        function toggleAdmin() {
-            const adminView = document.getElementById('admin-view');
-
-            // If already in admin mode, just exit
-            if (adminView && !adminView.classList.contains('hidden')) {
-                window.showView ? window.showView('input-view') : location.reload();
-                return;
-            }
-
-            // Show password modal
-            document.getElementById('password-modal').classList.remove('hidden');
-            document.getElementById('password-input').value = '';
-            document.getElementById('password-input').focus();
-        }
-
-        function submitPassword() {
-            const password = document.getElementById('password-input').value;
-            const errorEl = document.getElementById('password-error');
-            const inputEl = document.getElementById('password-input');
-
-            if (password !== ADMIN_PASSWORD) {
-                errorEl.classList.remove('hidden');
-                inputEl.classList.add('border-rose-500', 'bg-rose-50/30');
-                inputEl.value = '';
-                inputEl.focus();
-                return;
-            }
-
-            // Hide modal and error
-            document.getElementById('password-modal').classList.add('hidden');
-            errorEl.classList.add('hidden');
-            inputEl.classList.remove('border-rose-500', 'bg-rose-50/30');
-
-            // Show admin view
-            if (window.showView) {
-                window.showView('admin-view');
-            } else {
-                document.querySelectorAll('#loading-view, #input-view, #result-view, #error-view').forEach(el => el.classList.add('hidden'));
-                document.getElementById('admin-view').classList.remove('hidden');
-            }
-        }
-
-        function cancelPassword() {
-            document.getElementById('password-modal').classList.add('hidden');
-        }
-
-        // Allow Enter key to submit password
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('password-input').addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') submitPassword();
-            });
-        });
-    </script>
-
+    <!-- CORE JAVASCRIPT MODULE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, getDocs, writeBatch, addDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, getDocs, writeBatch, addDoc, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Firebase configuration
+        // ==========================================
+        // 1. CONFIGURATION & STATE
+        // ==========================================
         const firebaseConfig = typeof __firebase_config !== 'undefined'
             ? JSON.parse(__firebase_config)
             : {
@@ -626,204 +551,397 @@
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
         let PARTICIPANTS = [];
+        let currentCheckins = [];
+        let currentSortMode = 'status';
         let currentUser = null;
-        let dataLoadRetries = 0;
-        const MAX_RETRIES = 3;
+        let checkinsUnsubscribe = null;
+        const BATCH_SIZE = 450;
+
+        // ==========================================
+        // 2. CORE DATA SERVICES (The Engine)
+        // ==========================================
+        const initAuth = async () => {
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                try {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } catch (e) {
+                    console.error("Custom token auth failed", e);
+                    await signInAnonymously(auth);
+                }
+            } else {
+                await signInAnonymously(auth);
+            }
+        };
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUser = user;
-                dataLoadRetries = 0;
-                await loadGlobalDataWithRetry();
-            } else {
-                try {
-                    await signInAnonymously(auth);
-                } catch (authError) {
-                    console.error('Anonymous auth failed:', authError);
-                    showConnectionError('인증에 실패했습니다. 페이지를 새로고침 해주세요.');
-                }
+                await loadGlobalData();
             }
         });
 
-        async function loadGlobalDataWithRetry() {
-            while (dataLoadRetries < MAX_RETRIES) {
-                try {
-                    await loadGlobalData();
-                    if (PARTICIPANTS.length > 0) {
-                        showView('input-view');
-                        return; // Success!
-                    }
-                } catch (error) {
-                    console.error(`Data load attempt ${dataLoadRetries + 1} failed:`, error);
-                }
-                dataLoadRetries++;
-                if (dataLoadRetries < MAX_RETRIES) {
-                    await new Promise(r => setTimeout(r, 1000 * dataLoadRetries)); // Exponential backoff
-                }
-            }
-            // All retries failed
-            console.error('All data load attempts failed');
-            showConnectionError('데이터를 불러올 수 없습니다. 네트워크를 확인하고 페이지를 새로고침 해주세요.');
-        }
-
         async function loadGlobalData() {
-            if (!currentUser) throw new Error('No authenticated user');
-
-            // Force token refresh to prevent stale token issues
             try {
-                await currentUser.getIdToken(true);
-            } catch (tokenError) {
-                console.warn('Token refresh failed, attempting re-auth...');
-                await signInAnonymously(auth);
-                return; // onAuthStateChanged will re-trigger loadGlobalData
-            }
+                if (!currentUser) return;
+                const dataCol = collection(db, 'artifacts', appId, 'public', 'data', 'participants');
+                const snapshot = await getDocs(dataCol);
+                PARTICIPANTS = snapshot.docs.map(d => d.data());
+                console.log(`System: Loaded ${PARTICIPANTS.length} participants.`);
 
-            const dataCol = collection(db, 'artifacts', appId, 'public', 'data', 'participants');
-            const snapshot = await getDocs(dataCol);
-            PARTICIPANTS = snapshot.docs.map(d => d.data());
-            console.log(`Loaded ${PARTICIPANTS.length} participants`);
+                if (!document.getElementById('loading-view').classList.contains('hidden')) {
+                    window.showView('input-view');
+                }
+            } catch (error) {
+                console.error("Data load failed:", error);
+                showConnectionError("데이터 연결 실패. 네트워크를 확인하세요.");
+            }
         }
 
-        function showConnectionError(message) {
+        function subscribeToCheckins() {
+            if (checkinsUnsubscribe) return;
+            try {
+                const checkinsRef = collection(db, 'artifacts', appId, 'public', 'data', 'checkins');
+                const q = query(checkinsRef, orderBy('checkedInAt', 'desc'));
+                checkinsUnsubscribe = onSnapshot(q, (snapshot) => {
+                    currentCheckins = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                    updateAdminDashboard();
+                }, (error) => console.error('Check-in listener error:', error));
+            } catch (error) {
+                console.error('Failed to subscribe to check-ins:', error);
+            }
+        }
+
+        async function batchDeleteAll(collectionName) {
+            const colRef = collection(db, 'artifacts', appId, 'public', 'data', collectionName);
+            const snapshot = await getDocs(colRef);
+            if (snapshot.empty) return;
+            const chunks = chunkArray(snapshot.docs, BATCH_SIZE);
+            for (const chunk of chunks) {
+                const batch = writeBatch(db);
+                chunk.forEach(doc => batch.delete(doc.ref));
+                await batch.commit();
+            }
+        }
+
+        async function batchUploadParticipants(newData) {
+            await batchDeleteAll('participants');
+            const chunks = chunkArray(newData, BATCH_SIZE);
+            let globalIndex = 0;
+            for (const chunk of chunks) {
+                const batch = writeBatch(db);
+                chunk.forEach(p => {
+                    const ref = doc(db, 'artifacts', appId, 'public', 'data', 'participants', `p_${globalIndex++}`);
+                    batch.set(ref, p);
+                });
+                await batch.commit();
+            }
+        }
+
+        // ==========================================
+        // 3. BUSINESS LOGIC (The Brain)
+        // ==========================================
+        function sanitizePhoneNumber(input) {
+            if (!input) return '';
+            let digits = input.replace(/\D/g, '');
+            if (digits.startsWith('82')) digits = digits.substring(2);
+            if (digits.startsWith('010')) digits = digits.substring(1);
+            return digits;
+        }
+
+        function parseCSVLine(text) {
+            const re_value = /(?!\s*$)\s*(?:'([^']*(?:''[^']*)*)'|"([^"]*(?:""[^"]*)*)"|([^,'"\s\\]*(?:\s+[^,'"\s\\]+)*))\s*(?:,|$)/g;
+            const a = [];
+            text.replace(re_value, (m0, m1, m2, m3) => {
+                if (m1 !== undefined) a.push(m1.replace(/''/g, "'"));
+                else if (m2 !== undefined) a.push(m2.replace(/""/g, '"'));
+                else if (m3 !== undefined) a.push(m3);
+                return '';
+            });
+            if (/,\s*$/.test(text)) a.push('');
+            return a;
+        }
+
+        function getStats() {
+            const stats = {};
+            const checkedMap = new Map();
+            currentCheckins.forEach(c => {
+                const sPhone = sanitizePhoneNumber(c.phone || '');
+                if (sPhone) checkedMap.set(sPhone, true);
+            });
+
+            PARTICIPANTS.forEach(p => {
+                let activity = p.activity_name || p.액티비티 || p.bus || 'Unknown';
+                if (activity.includes(':')) activity = activity.split(':')[0].trim();
+
+                if (!stats[activity]) stats[activity] = { total: 0, checked: 0 };
+                stats[activity].total++;
+                const sPhone = sanitizePhoneNumber(p.phone || p.휴대전화 || '');
+                if (checkedMap.has(sPhone)) stats[activity].checked++;
+            });
+            return stats;
+        }
+
+        function chunkArray(array, size) {
+            const result = [];
+            for (let i = 0; i < array.length; i += size) {
+                result.push(array.slice(i, i + size));
+            }
+            return result;
+        }
+
+        // ==========================================
+        // 4. UI RENDERING (The Face)
+        // ==========================================
+        function showConnectionError(msg) {
             const errorView = document.getElementById('error-view');
             const title = errorView.querySelector('h2');
             const desc = errorView.querySelector('p');
             if (title) title.textContent = '연결 오류';
-            if (desc) desc.textContent = message;
-            showView('error-view');
+            if (desc) desc.textContent = msg;
+            window.showView('error-view');
         }
+
+        function renderResult(user, inputName) {
+            document.getElementById('res-name').textContent = user.name || user.이름 || inputName;
+            document.getElementById('res-dept').textContent = user.department || user.부서 || '';
+            document.getElementById('res-activity-detail').textContent = user.activity_name || user.액티비티 || user.bus || '-';
+            document.getElementById('res-time').textContent = user.start_time || user.출발시간 || '-';
+            document.getElementById('res-location').textContent = user.meeting_point || user.집합장소 || '-';
+            document.getElementById('res-guide').textContent = user.guide_info || user['가이드 정보'] || '-';
+
+            const timelineContainer = document.getElementById('timeline-container');
+            const schedules = [user.schedule_1 || user['일정 1'], user.schedule_2 || user['일정 2'], user.schedule_3 || user['일정 3']].filter(s => s && s.trim());
+
+            if (schedules.length > 0) {
+                timelineContainer.innerHTML = schedules.map((s, idx) => `
+                    <div class="flex gap-4 items-start relative group">
+                        <div class="flex flex-col items-center flex-none">
+                            <div class="w-2.5 h-2.5 rounded-full ${idx === 0 ? 'bg-[#00A97A]' : 'bg-slate-200'} z-10 shadow-sm border-2 border-white transition-soft group-hover:scale-125"></div>
+                            ${idx !== schedules.length - 1 ? '<div class="w-px h-12 bg-slate-100 -mt-0.5"></div>' : ''}
+                        </div>
+                        <div class="pb-8"><p class="text-[11px] font-bold text-slate-800 leading-relaxed transition-soft group-hover:text-slate-900">${s}</p></div>
+                    </div>
+                `).join('');
+            } else {
+                timelineContainer.innerHTML = '<p class="text-slate-400 text-xs">No schedule available</p>';
+            }
+
+            const supplies = user.supplies || user.준비물;
+            const notice = user.notice || user.주의사항;
+            const noticeBox = document.getElementById('notice-box');
+            if (supplies || notice) {
+                noticeBox.classList.remove('hidden');
+                noticeBox.querySelector('#notice-supplies span').textContent = supplies || '';
+                noticeBox.querySelector('#notice-warning span').textContent = notice || '';
+                noticeBox.querySelector('#notice-supplies').style.display = supplies ? 'flex' : 'none';
+                noticeBox.querySelector('#notice-warning').style.display = notice ? 'flex' : 'none';
+            } else {
+                noticeBox.classList.add('hidden');
+            }
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function updateAdminDashboard() {
+            document.getElementById('admin-total-count').textContent = PARTICIPANTS.length;
+            document.getElementById('admin-checked-count').textContent = currentCheckins.length;
+
+            const logEl = document.getElementById('checkin-log');
+            if (currentCheckins.length === 0) {
+                logEl.innerHTML = '<p class="text-slate-400 text-center py-10 text-[10px] font-black uppercase tracking-widest">No Activity Logged</p>';
+            } else {
+                logEl.innerHTML = currentCheckins.map(c => {
+                    const time = new Date(c.checkedInAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+                    return `<div class="flex justify-between items-center bg-white border border-slate-100 rounded-xl px-4 py-2.5 transition-soft">
+                        <div class="flex items-center gap-3">
+                            <span class="font-black text-slate-900 text-[11px]">${c.name}</span>
+                            <span class="text-[8px] text-slate-300 font-bold uppercase tracking-widest">${c.department || '-'}</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-[#9E2AB5] font-black text-[9px] uppercase tracking-tight">${(c.activity || '').split(':')[0]}</span>
+                            <span class="text-[8px] font-bold text-slate-300">${time}</span>
+                        </div>
+                    </div>`;
+                }).join('');
+            }
+            renderAttendanceList();
+            if (!document.getElementById('stats-container').classList.contains('hidden')) {
+                renderStats();
+            }
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function renderStats() {
+            const stats = getStats();
+            const container = document.getElementById('stats-container');
+            container.innerHTML = Object.entries(stats).map(([key, val]) => {
+                const percent = Math.round((val.checked / val.total) * 100) || 0;
+                return `
+                <div class="bg-white border border-slate-100 p-2.5 rounded-xl shadow-sm">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-[9px] font-black text-slate-800 uppercase tracking-tight">${key}</span>
+                        <span class="text-[8px] font-bold text-[#00A97A]">${percent}%</span>
+                    </div>
+                    <div class="flex justify-between items-end">
+                        <span class="text-[8px] text-slate-400 font-bold uppercase tracking-widest">Progress</span>
+                        <span class="text-[10px] font-black text-slate-900 leading-none">${val.checked}<span class="text-slate-300">/${val.total}</span></span>
+                    </div>
+                    <div class="mt-1.5 h-1 w-full bg-slate-100 rounded-full overflow-hidden">
+                        <div class="h-full bg-[#00A97A] rounded-full" style="width: ${percent}%"></div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function renderAttendanceList() {
+            const listEl = document.getElementById('attendance-list');
+            const searchVal = document.getElementById('admin-search-input').value.toLowerCase().trim();
+
+            if (PARTICIPANTS.length === 0) {
+                listEl.innerHTML = '<p class="text-slate-400 text-center py-8">Upload CSV first</p>';
+                return;
+            }
+
+            const checkedMap = new Map();
+            currentCheckins.forEach(c => {
+                const sPhone = sanitizePhoneNumber(c.phone || '');
+                if (sPhone) checkedMap.set(sPhone, c);
+            });
+
+            const displayData = PARTICIPANTS
+                .filter(p => {
+                    if (!searchVal) return true;
+                    const name = (p.name || p.이름 || '').toLowerCase();
+                    const phone = (p.phone || p.휴대전화 || '');
+                    return name.includes(searchVal) || phone.includes(searchVal);
+                })
+                .map(p => {
+                    const sPhone = sanitizePhoneNumber(p.phone || p.휴대전화 || '');
+                    return { ...p, sPhone, isChecked: checkedMap.has(sPhone) };
+                });
+
+            displayData.sort((a, b) => {
+                if (currentSortMode === 'status') {
+                    if (a.isChecked === b.isChecked) return (a.name || a.이름 || '').localeCompare(b.name || b.이름 || '');
+                    return a.isChecked ? 1 : -1;
+                }
+                return (a.name || a.이름 || '').localeCompare(b.name || b.이름 || '');
+            });
+
+            if (displayData.length === 0) {
+                listEl.innerHTML = '<p class="text-slate-400 text-center py-8 text-[10px]">No results found</p>';
+                return;
+            }
+
+            listEl.innerHTML = displayData.map(p => {
+                return `<div class="flex justify-between items-center bg-white border border-slate-100 rounded-xl px-4 py-2 group hover:border-[#00A97A]/30 transition-soft">
+                    <div class="flex items-center gap-3">
+                        <div class="w-1.5 h-1.5 rounded-full ${p.isChecked ? 'bg-[#00A97A]' : 'bg-slate-200'}"></div>
+                        <span class="font-black text-slate-900 text-[11px]">${p.name || p.이름}</span>
+                        <span class="text-[8px] text-slate-300 font-bold uppercase tracking-widest">${p.department || '-'}</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="text-[#9E2AB5] font-black text-[8px] uppercase tracking-widest bg-[#9E2AB5]/5 px-1.5 py-0.5 rounded-md">${(p.activity_name || p.액티비티 || '').split(':')[0]}</span>
+                        <div class="w-12 text-center">
+                            ${p.isChecked
+                        ? `<span class="text-[8px] font-black text-[#00A97A] uppercase tracking-widest">Done</span>`
+                        : `<span class="text-[8px] font-black text-slate-300 uppercase tracking-widest">Wait</span>`
+                    }
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        // ==========================================
+        // 5. PUBLIC INTERFACE (The Window Bridge)
+        // ==========================================
 
         window.showView = (id) => {
             ['loading-view', 'admin-view', 'input-view', 'result-view', 'error-view'].forEach(v => document.getElementById(v).classList.add('hidden'));
             document.getElementById(id).classList.remove('hidden');
 
-            // Toggle Admin Icon State
             const adminIcon = document.getElementById('admin-icon');
             const adminTrigger = document.getElementById('admin-trigger');
+
             if (id === 'admin-view') {
                 adminIcon.setAttribute('data-lucide', 'x');
                 adminTrigger.classList.add('bg-slate-900', 'border-slate-900');
+                subscribeToCheckins();
             } else {
                 adminIcon.setAttribute('data-lucide', 'settings');
                 adminTrigger.classList.remove('bg-slate-900', 'border-slate-900');
             }
-
-            lucide.createIcons();
-            if (id === 'admin-view') loadCheckins();
+            if (window.lucide) lucide.createIcons();
         };
 
-        // ============================================
-        // PHONE-CENTRIC LOOKUP (Ease of Use)
-        // ============================================
         window.handleLookup = async () => {
             const nameInput = document.getElementById('name-input').value.trim();
             const phoneInput = document.getElementById('phone-input').value;
-            const sanitizedPhone = sanitizePhoneNumber(phoneInput);
+            const countryCodeInput = document.getElementById('country-code-input').value; // Default "82"
 
-            if (!phoneInput) {
-                alert("연락처를 입력해주세요.");
-                return;
-            }
+            // Combine them for the check: "82" + "010..." -> "82010..."
+            const combinedPhone = countryCodeInput + phoneInput;
+            const sanitizedPhone = sanitizePhoneNumber(combinedPhone);
 
-            // Find by Phone Number only (addressing user feedback for typing convenience)
+            if (!phoneInput) { alert("연락처를 입력해주세요."); return; }
+
             const user = PARTICIPANTS.find(u => {
                 const storedPhone = sanitizePhoneNumber(u.phone || u.휴대전화 || '');
                 return storedPhone === sanitizedPhone;
             });
 
             if (user) {
-                // Display user info
-                const activityName = user.activity_name || user.액티비티 || user.bus || 'Activity';
-                const displayName = user.name || user.이름 || nameInput;
-                document.getElementById('res-name').textContent = displayName;
-                document.getElementById('res-dept').textContent = user.department || user.부서 || '';
-
-                // Format Activity Detail: "A코스 : 한라산챌린지 (영실코스)"
-                document.getElementById('res-activity-detail').textContent = activityName;
-
-                document.getElementById('res-time').textContent = user.start_time || user.출발시간 || user.time || '-';
-                document.getElementById('res-location').textContent = user.meeting_point || user.집합장소 || '-';
-                document.getElementById('res-guide').textContent = user.guide_info || user['가이드 정보'] || '-';
-
-                // Build timeline
-                const timelineContainer = document.getElementById('timeline-container');
-                const schedules = [
-                    user.schedule_1 || user['일정 1'],
-                    user.schedule_2 || user['일정 2'],
-                    user.schedule_3 || user['일정 3']
-                ].filter(s => s && s.trim());
-
-                if (schedules.length > 0) {
-                    timelineContainer.innerHTML = schedules.map((s, idx) => `
-                        <div class="flex gap-4 items-start relative group">
-                            <div class="flex flex-col items-center flex-none">
-                                <div class="w-2.5 h-2.5 rounded-full ${idx === 0 ? 'bg-[#00A97A]' : 'bg-slate-200'} z-10 shadow-sm border-2 border-white transition-soft group-hover:scale-125"></div>
-                                ${idx !== schedules.length - 1 ? '<div class="w-px h-12 bg-slate-100 -mt-0.5"></div>' : ''}
-                            </div>
-                            <div class="pb-8">
-                                <p class="text-[11px] font-bold text-slate-800 leading-relaxed transition-soft group-hover:text-slate-900">${s}</p>
-                            </div>
-                        </div>
-                    `).join('');
-                    // Refresh icons
-                    if (window.lucide) lucide.createIcons();
-                } else {
-                    timelineContainer.innerHTML = '<p class="text-slate-400 text-xs">No schedule available</p>';
-                }
-
-                // Handle notice box
-                const supplies = user.supplies || user.준비물 || '';
-                const notice = user.notice || user.주의사항 || '';
-                const noticeBox = document.getElementById('notice-box');
-
-                if (supplies || notice) {
-                    noticeBox.classList.remove('hidden');
-                    noticeBox.querySelector('#notice-supplies span').textContent = supplies || '-';
-                    noticeBox.querySelector('#notice-warning span').textContent = notice || '-';
-                    noticeBox.querySelector('#notice-supplies').style.display = supplies ? 'flex' : 'none';
-                    noticeBox.querySelector('#notice-warning').style.display = notice ? 'flex' : 'none';
-                } else {
-                    noticeBox.classList.add('hidden');
-                }
-
-                showView('result-view');
-
-                // Log check-in to Firebase (with deduplication)
-                try {
-                    const checkinsRef = collection(db, 'artifacts', appId, 'public', 'data', 'checkins');
-
-                    // Check if this phone number already has a check-in
-                    const existingSnapshot = await getDocs(checkinsRef);
-                    const alreadyCheckedIn = existingSnapshot.docs.some(doc => {
-                        const data = doc.data();
-                        return sanitizePhoneNumber(data.phone || '') === sanitizedPhone;
-                    });
-
-                    // Only create a new check-in if one doesn't exist
-                    if (!alreadyCheckedIn) {
+                renderResult(user, nameInput);
+                const alreadyChecked = currentCheckins.some(c => sanitizePhoneNumber(c.phone) === sanitizedPhone);
+                if (!alreadyChecked) {
+                    try {
+                        const checkinsRef = collection(db, 'artifacts', appId, 'public', 'data', 'checkins');
                         await addDoc(checkinsRef, {
                             name: user.name || user.이름 || nameInput,
                             phone: sanitizedPhone,
-                            activity: user.activity_name || user.액티비티 || user.bus,
+                            activity: user.activity_name || user.액티비티 || user.bus || 'Activity',
                             department: user.department || user.부서 || '',
                             checkedInAt: new Date().toISOString()
                         });
-                        console.log('New check-in recorded for:', sanitizedPhone);
-                    } else {
-                        console.log('Already checked in:', sanitizedPhone);
-                    }
-                } catch (error) {
-                    console.log('Check-in logging failed:', error);
+                    } catch (e) { console.error("Checkin log failed", e); }
                 }
+                window.showView('result-view');
             } else {
-                showView('error-view');
+                window.showView('error-view');
             }
         };
 
         window.resetApp = () => {
             document.getElementById('name-input').value = '';
             document.getElementById('phone-input').value = '';
-            showView('input-view');
+            document.getElementById('country-code-input').value = '82'; // Reset to default
+            window.showView('input-view');
+        };
+
+        window.toggleAdmin = () => {
+            const adminView = document.getElementById('admin-view');
+            if (adminView && !adminView.classList.contains('hidden')) {
+                window.showView('input-view');
+            } else {
+                document.getElementById('password-modal').classList.remove('hidden');
+                document.getElementById('password-input').value = '';
+                document.getElementById('password-input').focus();
+            }
+        };
+
+        window.submitPassword = () => {
+            const password = document.getElementById('password-input').value;
+            if (password === 'admin123') {
+                document.getElementById('password-modal').classList.add('hidden');
+                document.getElementById('password-error').classList.add('hidden');
+                window.showView('admin-view');
+            } else {
+                document.getElementById('password-error').classList.remove('hidden');
+            }
+        };
+
+        window.cancelPassword = () => {
+            document.getElementById('password-modal').classList.add('hidden');
         };
 
         window.switchAdminTab = (tab) => {
@@ -846,155 +964,47 @@
             }
         };
 
-        let currentCheckins = [];
-        let currentSortMode = 'status'; // 'name', 'course', 'status'
-
-        // Load check-ins and update dashboard
-        async function loadCheckins() {
-            try {
-                const checkinsRef = collection(db, 'artifacts', appId, 'public', 'data', 'checkins');
-                const q = query(checkinsRef, orderBy('checkedInAt', 'desc'));
-                const snapshot = await getDocs(q);
-                currentCheckins = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-
-                const logEl = document.getElementById('checkin-log');
-                document.getElementById('admin-total-count').textContent = PARTICIPANTS.length;
-                document.getElementById('admin-checked-count').textContent = currentCheckins.length;
-
-                if (currentCheckins.length === 0) {
-                    logEl.innerHTML = '<p class="text-slate-400 text-center py-10 text-[10px] font-black uppercase tracking-widest">No Activity Logged</p>';
-                } else {
-                    logEl.innerHTML = currentCheckins.map(c => {
-                        const time = new Date(c.checkedInAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
-                        return `<div class="flex justify-between items-center bg-white border border-slate-100 rounded-xl px-4 py-2.5 transition-soft">
-                            <div class="flex items-center gap-3">
-                                <span class="font-black text-slate-900 text-[11px]">${c.name}</span>
-                                <span class="text-[8px] text-slate-300 font-bold uppercase tracking-widest">${c.department || '-'}</span>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <span class="text-[#9E2AB5] font-black text-[9px] uppercase tracking-tight">${(c.activity || '').split(':')[0]}</span>
-                                <span class="text-[8px] font-bold text-slate-300">${time}</span>
-                            </div>
-                        </div>`;
-                    }).join('');
-                }
-                if (window.lucide) lucide.createIcons();
-
-                // If status tab is active, refresh it too
-                if (!document.getElementById('attendance-status-container').classList.contains('hidden')) {
-                    renderAttendanceList();
-                }
-            } catch (error) {
-                console.error('Failed to load check-ins:', error);
+        window.toggleStats = () => {
+            const container = document.getElementById('stats-container');
+            const chevron = document.getElementById('stats-chevron');
+            if (container.classList.contains('hidden')) {
+                container.classList.remove('hidden');
+                chevron.classList.add('rotate-180');
+                renderStats();
+            } else {
+                container.classList.add('hidden');
+                chevron.classList.remove('rotate-180');
             }
-        }
+        };
 
-        // Render the full list with check-in status
+        window.filterAdminList = () => {
+            renderAttendanceList();
+        };
+
         window.sortAttendance = (mode) => {
             currentSortMode = mode;
-            // Update UI Toolbar
             ['status', 'name'].forEach(m => {
                 const btn = document.getElementById(`sort-${m}-btn`);
-                if (m === mode) {
-                    btn.className = "px-3 py-1.5 bg-[#00A97A] text-white text-[8px] font-black uppercase tracking-widest rounded-lg shadow-md shadow-[#00A97A]/20 transition-soft";
-                } else {
-                    btn.className = "px-3 py-1.5 bg-white border border-slate-100 text-slate-400 text-[8px] font-black uppercase tracking-widest rounded-lg transition-soft";
-                }
+                btn.className = (m === mode)
+                    ? "px-3 py-1.5 bg-[#00A97A] text-white text-[8px] font-black uppercase tracking-widest rounded-lg shadow-md shadow-[#00A97A]/20 transition-soft"
+                    : "px-3 py-1.5 bg-white border border-slate-100 text-slate-400 text-[8px] font-black uppercase tracking-widest rounded-lg transition-soft";
             });
             renderAttendanceList();
         };
 
-        function renderAttendanceList() {
-            const listEl = document.getElementById('attendance-list');
-
-            // Map checkins by sanitized phone for quick lookup
-            const checkedMap = new Map();
-            currentCheckins.forEach(c => {
-                const sPhone = sanitizePhoneNumber(c.phone || '');
-                if (sPhone) checkedMap.set(sPhone, c);
-            });
-
-            if (PARTICIPANTS.length === 0) {
-                listEl.innerHTML = '<p class="text-slate-400 text-center py-8">Upload CSV first</p>';
-                return;
-            }
-
-            // Create data for sorting
-            const displayData = PARTICIPANTS.map(p => {
-                const sPhone = sanitizePhoneNumber(p.phone || p.휴대전화 || '');
-                return {
-                    ...p,
-                    sPhone,
-                    isChecked: checkedMap.has(sPhone)
-                };
-            });
-
-            // Apply sorting
-            displayData.sort((a, b) => {
-                if (currentSortMode === 'course') {
-                    const activityA = a.activity_name || a.액티비티 || '';
-                    const activityB = b.activity_name || b.액티비티 || '';
-                    return activityA.localeCompare(activityB, 'ko-KR');
-                } else if (currentSortMode === 'status') {
-                    if (a.isChecked === b.isChecked) {
-                        return (a.name || a.이름 || '').localeCompare(b.name || b.이름 || '', 'ko-KR');
-                    }
-                    return a.isChecked ? 1 : -1; // Pending first (false < true)
-                } else {
-                    // Default: Name
-                    return (a.name || a.이름 || '').localeCompare(b.name || b.이름 || '', 'ko-KR');
-                }
-            });
-
-            listEl.innerHTML = displayData.map(p => {
-                return `<div class="flex justify-between items-center bg-white border border-slate-100 rounded-xl px-4 py-2 group hover:border-[#00A97A]/30 transition-soft">
-                    <div class="flex items-center gap-3">
-                        <div class="w-1.5 h-1.5 rounded-full ${p.isChecked ? 'bg-[#00A97A]' : 'bg-slate-200'}"></div>
-                        <span class="font-black text-slate-900 text-[11px]">${p.name || p.이름}</span>
-                        <span class="text-[8px] text-slate-300 font-bold uppercase tracking-widest">${p.department || '-'}</span>
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <span class="text-[#9E2AB5] font-black text-[8px] uppercase tracking-widest bg-[#9E2AB5]/5 px-1.5 py-0.5 rounded-md">${(p.activity_name || p.액티비티 || '').split(':')[0]}</span>
-                        <div class="w-12 text-center">
-                            ${p.isChecked
-                        ? `<span class="text-[8px] font-black text-[#00A97A] uppercase tracking-widest">Done</span>`
-                        : `<span class="text-[8px] font-black text-slate-300 uppercase tracking-widest">Wait</span>`
-                    }
-                        </div>
-                    </div>
-                </div>`;
-            }).join('');
-        }
-
-        // Clear all check-ins
         window.clearCheckins = async () => {
             if (!confirm('This will delete all check-in records. Continue?')) return;
-            try {
-                const checkinsRef = collection(db, 'artifacts', appId, 'public', 'data', 'checkins');
-                const snapshot = await getDocs(checkinsRef);
-                const batch = writeBatch(db);
-                snapshot.docs.forEach(d => batch.delete(d.ref));
-                await batch.commit();
-                await loadCheckins();
-            } catch (error) {
-                console.error('Failed to clear records:', error);
-            }
+            try { await batchDeleteAll('checkins'); } catch (e) { console.error(e); }
         };
 
-        // Export Full Report (Attendance Status)
-        window.exportFullReport = async () => {
-            if (PARTICIPANTS.length === 0) {
-                alert('No participant data loaded');
-                return;
-            }
-
+        window.exportFullReport = () => {
+            if (PARTICIPANTS.length === 0) { alert('No data'); return; }
             const checkedMap = new Map();
             currentCheckins.forEach(c => {
                 const sPhone = sanitizePhoneNumber(c.phone || '');
                 if (sPhone) checkedMap.set(sPhone, c);
             });
-
-            const headers = ['Name', 'Phone', 'Department', 'Activity', 'Status', 'Check-in Time'];
+            const headers = ['Name', 'Phone', 'Department', 'Activity', 'Status', 'Time'];
             const rows = PARTICIPANTS.map(p => {
                 const sPhone = sanitizePhoneNumber(p.phone || p.휴대전화 || '');
                 const check = checkedMap.get(sPhone);
@@ -1007,104 +1017,76 @@
                     check ? new Date(check.checkedInAt).toLocaleString('ko-KR') : '-'
                 ];
             });
-
-            const csvContent = [headers, ...rows]
-                .map(row => row.map(cell => `"${cell}"`).join(','))
-                .join('\n');
-
+            const csvContent = [headers, ...rows].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
             const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = `attendance_report_${new Date().toISOString().slice(0, 10)}.csv`;
+            link.download = `report_${new Date().toISOString().slice(0, 10)}.csv`;
             link.click();
-            URL.revokeObjectURL(url);
         };
 
-        // ============================================
-        // CSV UPLOAD WITH SANITIZATION
-        // ============================================
+        // CSV UPLOAD HANDLERS
         document.getElementById('drop-zone').onclick = () => document.getElementById('csv-upload').click();
         document.getElementById('csv-upload').onchange = async (e) => {
             const file = e.target.files[0];
             if (!file) return;
-
             const reader = new FileReader();
             reader.onload = async (event) => {
                 const text = event.target.result;
                 const lines = text.split('\n');
-                const headers = lines[0].split(',').map(h => h.trim().replace(/^\uFEFF/, ''));
-
+                const headerLine = lines[0].trim();
+                const headers = parseCSVLine(headerLine).map(h => h.trim().replace(/^\uFEFF/, ''));
+                const getIdx = (name) => {
+                    const idx = headers.findIndex(h => h === name.trim());
+                    return idx === -1 ? null : idx;
+                };
                 const newData = [];
                 for (let i = 1; i < lines.length; i++) {
                     const line = lines[i].trim();
                     if (!line) continue;
-
-                    const cols = line.split(',').map(c => c.trim());
-                    if (cols.length < 4) continue;
-
-                    // Map CSV columns to data object with sanitized phone
-                    const participant = {
-                        name: cols[headers.indexOf('이름')] || cols[0] || '',
-                        department: cols[headers.indexOf('부서')] || cols[1] || '',
-                        phone: sanitizePhoneNumber(cols[headers.indexOf('휴대전화')] || cols[2] || ''),
-                        activity_name: cols[headers.indexOf('액티비티')] || cols[3] || '',
-                        start_time: cols[headers.indexOf('출발시간')] || cols[4] || '',
-                        meeting_point: cols[headers.indexOf('집합장소')] || cols[5] || '',
-                        guide_info: cols[headers.indexOf('가이드 정보')] || cols[6] || '',
-                        schedule_1: cols[headers.indexOf('일정 1')] || cols[7] || '',
-                        schedule_2: cols[headers.indexOf('일정 2')] || cols[8] || '',
-                        schedule_3: cols[headers.indexOf('일정 3')] || cols[9] || '',
-                        supplies: cols[headers.indexOf('준비물')] || cols[10] || '',
-                        notice: cols[headers.indexOf('주의사항')] || cols[11] || ''
+                    const cols = parseCSVLine(line);
+                    const p = {
+                        name: cols[getIdx('이름')] || cols[0] || '',
+                        department: cols[getIdx('부서')] || cols[1] || '',
+                        phone: sanitizePhoneNumber(cols[getIdx('휴대전화')] || cols[2] || ''),
+                        activity_name: cols[getIdx('액티비티')] || cols[3] || '',
+                        start_time: cols[getIdx('출발시간')] || cols[4] || '',
+                        meeting_point: cols[getIdx('집합장소')] || cols[5] || '',
+                        guide_info: cols[getIdx('가이드 정보')] || cols[6] || '',
+                        schedule_1: cols[getIdx('일정 1')] || cols[7] || '',
+                        schedule_2: cols[getIdx('일정 2')] || cols[8] || '',
+                        schedule_3: cols[getIdx('일정 3')] || cols[9] || '',
+                        supplies: cols[getIdx('준비물')] || cols[10] || '',
+                        notice: cols[getIdx('주의사항')] || cols[11] || ''
                     };
-
-                    newData.push(participant);
+                    newData.push(p);
                 }
-
                 if (newData.length > 0) {
                     try {
-                        // Delete existing participants first
-                        const existingCol = collection(db, 'artifacts', appId, 'public', 'data', 'participants');
-                        const existingSnapshot = await getDocs(existingCol);
-                        const deleteBatch = writeBatch(db);
-                        existingSnapshot.docs.forEach(d => deleteBatch.delete(d.ref));
-                        await deleteBatch.commit();
-
-                        // Add new participants
-                        const addBatch = writeBatch(db);
-                        newData.forEach((p, idx) => {
-                            const ref = doc(db, 'artifacts', appId, 'public', 'data', 'participants', `p_${idx}`);
-                            addBatch.set(ref, p);
-                        });
-                        await addBatch.commit();
+                        document.getElementById('upload-msg').innerHTML = '<span class="animate-pulse">Syncing...</span>';
+                        await batchUploadParticipants(newData);
                         await loadGlobalData();
-
-                        document.getElementById('upload-msg').innerHTML = `
-                            <div class="inline-flex items-center gap-2 px-4 py-2 bg-[#00A97A]/5 text-[#00A97A] rounded-full border border-[#00A97A]/10 animate-fade-in shadow-sm">
-                                <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i>
-                                <span class="text-[9px] font-black uppercase tracking-widest">${newData.length} Entries Synced Successfully</span>
-                            </div>`;
-                        lucide.createIcons();
-                        setTimeout(() => {
-                            document.getElementById('upload-msg').innerHTML = '';
-                        }, 4000);
+                        document.getElementById('upload-msg').innerHTML = 'Done';
+                        setTimeout(() => document.getElementById('upload-msg').innerHTML = '', 4000);
+                        if (window.lucide) lucide.createIcons();
                     } catch (error) {
                         console.error('Upload error:', error);
-                        document.getElementById('upload-msg').innerHTML = `
-                            <div class="inline-flex items-center gap-2 px-4 py-2 bg-rose-50 text-rose-500 rounded-full border border-rose-100 animate-fade-in shadow-sm">
-                                <i data-lucide="alert-circle" class="w-3.5 h-3.5"></i>
-                                <span class="text-[9px] font-black uppercase tracking-widest">Protocol Sync Failed</span>
-                            </div>`;
-                        lucide.createIcons();
+                        document.getElementById('upload-msg').innerText = "Upload Failed";
                     }
                 }
             };
             reader.readAsText(file);
         };
 
-        // Initialize icons
-        lucide.createIcons();
+        // PASSWORD ENTER KEY
+        document.getElementById('password-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') window.submitPassword();
+        });
+
+        // STARTUP
+        initAuth();
+        if (window.lucide) lucide.createIcons();
     </script>
 </body>
 

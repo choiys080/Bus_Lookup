@@ -1,0 +1,12 @@
+--- Quick Debug ---
+PAGE LOG: cdn.tailwindcss.com should not be used in production. To use Tailwind CSS in production, install it as a PostCSS plugin or use the Tailwind CLI: https://tailwindcss.com/docs/installation
+PAGE LOG: Loaded 115 participants
+--- VIEWS STATUS ---
+{
+  "loading-view": "hidden",
+  "admin-view": "hidden",
+  "input-view": "VISIBLE",
+  "result-view": "hidden",
+  "error-view": "hidden"
+}
+--------------------
