@@ -6,9 +6,107 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Activity Check-In Portal</title>
     <meta name="description" content="Corporate activity selection and itinerary lookup portal">
-    <link rel="stylesheet" href="./styles.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@700;800;900&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            color: #0f172a;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        .font-heading {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .slide-in {
+            animation: slideIn 0.4s ease-out forwards;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Timeline & Scrollbar */
+        .timeline-item {
+            position: relative;
+            padding-left: 2rem;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 0.45rem;
+            top: 1.5rem;
+            width: 2px;
+            height: calc(100% - 0.5rem);
+            background: #e2e8f0;
+        }
+
+        .timeline-item:last-child::before {
+            display: none;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.7);
+            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .shadow-premium {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04), 0 4px 6px -2px rgba(0, 0, 0, 0.02), 0 20px 25px -5px rgba(0, 0, 0, 0.03);
+        }
+
+        .transition-soft {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #e2e8f0;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #cbd5e1;
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+        }
+
+        @supports (scrollbar-width: none) {
+            .no-scrollbar {
+                scrollbar-width: none;
+            }
+        }
+    </style>
 </head>
 
 <body class="bg-slate-100 min-h-screen flex flex-col items-center p-4 sm:p-8">
@@ -179,6 +277,21 @@
             <div id="input-view" class="hidden slide-in flex flex-col flex-1">
                 <div class="space-y-10">
                     <div class="space-y-6">
+                        <!-- NAME INPUT HIDDEN HERE (Preserved for future use) -->
+                        <div class="space-y-2 hidden">
+                            <label
+                                class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Full
+                                Name</label>
+                            <div class="relative group">
+                                <div
+                                    class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none transition-soft group-focus-within:text-[#00A97A]">
+                                    <i data-lucide="user" class="w-5 h-5 text-slate-300"></i>
+                                </div>
+                                <input type="text" id="name-input" placeholder="Enter your name"
+                                    class="w-full pl-12 pr-5 py-4 bg-slate-50 border border-slate-100/50 rounded-2xl focus:ring-4 focus:ring-[#00A97A]/10 focus:border-[#00A97A] outline-none transition-soft placeholder:text-slate-300 font-semibold text-slate-800">
+                            </div>
+                        </div>
+
                         <div class="space-y-2">
                             <label
                                 class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Mobile
@@ -227,16 +340,28 @@
                             </p>
                         </div>
                     </div>
+                    <div class="mt-6 flex justify-center">
+                        <div class="bg-[#9E2AB5]/5 px-4 py-3 rounded-2xl border border-[#9E2AB5]/10 max-w-[240px]">
+                            <p class="text-[10px] text-[#9E2AB5] font-black leading-relaxed tracking-wide">
+                                <i data-lucide="info" class="w-3 h-3 inline-block mr-1 mb-0.5"></i>
+                                현재 고객님을 위한 <br> 맞춤형 투어 정보가 준비되었습니다.
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
+                <!-- BANNER SECTION: REPLACED GRADIENT WITH IMAGE -->
                 <div class="mb-8 group relative rounded-3xl overflow-hidden shadow-2xl h-48">
+                    <!-- BACKGROUND IMAGE (Replace the src below with your actual image URL) -->
                     <img src="https://images.unsplash.com/photo-1548115184-bc6544d06a58?q=80&w=2070&auto=format&fit=crop"
                         alt="Activity Banner"
                         class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
 
+                    <!-- DARK OVERLAY (So text is readable) -->
                     <div class="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent">
                     </div>
 
+                    <!-- TEXT CONTENT -->
                     <div class="absolute bottom-0 left-0 p-6 z-10 w-full">
                         <span
                             class="text-[#00A97A] text-[10px] font-black uppercase tracking-widest block mb-1 bg-white/10 backdrop-blur-md inline-block px-2 py-1 rounded-lg">Selected
@@ -407,6 +532,7 @@
         </div>
     </div>
 
+    <!-- CORE JAVASCRIPT MODULE -->
     <script type="module" src="./app.js"></script>
 </body>
 
