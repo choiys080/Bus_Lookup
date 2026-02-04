@@ -99,7 +99,12 @@
 
         .no-scrollbar {
             -ms-overflow-style: none;
-            scrollbar-width: none;
+        }
+
+        @supports (scrollbar-width: none) {
+            .no-scrollbar {
+                scrollbar-width: none;
+            }
         }
     </style>
 </head>
