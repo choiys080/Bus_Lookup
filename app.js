@@ -1,8 +1,8 @@
 import { auth, db, appId } from './js/config.js';
 import { signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-import { collection, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-import { fetchParticipants, listenToCheckins, batchUploadParticipants, batchDeleteAll } from './js/services.js';
-import { sanitizePhoneNumber, parseCSVLine } from './js/utils.js';
+import { collection, addDoc, setDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { fetchParticipants, listenToCheckins, batchUploadParticipants, batchDeleteAll, checkParticipantStatus } from './js/services.js';
+import { sanitizePhoneNumber, parseCSVLine, getSafeHeader } from './js/utils.js';
 import * as ui from './js/ui.js';
 
 // STATE
@@ -43,6 +43,10 @@ onAuthStateChanged(auth, async (user) => {
         try {
             PARTICIPANTS = await fetchParticipants();
             console.log(`System: Loaded ${PARTICIPANTS.length} participants.`);
+
+            PARTICIPANTS = await fetchParticipants();
+            window.PARTICIPANTS = PARTICIPANTS; // Expose for testing
+            console.log(`System: Loaded ${PARTICIPANTS.length} participants.`);
             ui.showView('input-view');
         } catch (err) {
             ui.showConnectionError("데이터 연결 실패: " + err.message);
@@ -58,23 +62,50 @@ window.handleLookup = async () => {
     const phoneInput = document.getElementById('phone-input')?.value;
     const countryCodeInput = document.getElementById('country-code-input')?.value;
 
+    if (!phoneInput) { alert("연락처를 입력해주세요."); return; }
+
     const combinedPhone = countryCodeInput + phoneInput;
     const sanitizedPhone = sanitizePhoneNumber(combinedPhone);
 
-    if (!phoneInput) { alert("연락처를 입력해주세요."); return; }
-
-    const user = PARTICIPANTS.find(u => {
+    // 1. Try finding them in current memory
+    let user = PARTICIPANTS.find(u => {
         const storedPhone = sanitizePhoneNumber(u.phone || u.휴대전화 || '');
         return storedPhone === sanitizedPhone;
     });
 
+    // 2. THE FIX: If not found, fetch fresh data and try again
+    if (!user) {
+        // Show a temporary loading state on the button
+        const btn = document.getElementById('verify-btn');
+        const originalText = btn ? btn.innerHTML : '';
+        if (btn) btn.innerHTML = '<span class="animate-spin">↻</span> Checking Server...';
+
+        try {
+            console.log("User not found locally. Fetching fresh data...");
+            PARTICIPANTS = await fetchParticipants();
+
+            // Try finding them again in the fresh list
+            user = PARTICIPANTS.find(u => {
+                const storedPhone = sanitizePhoneNumber(u.phone || u.휴대전화 || '');
+                return storedPhone === sanitizedPhone;
+            });
+        } catch (e) {
+            console.error("Emergency fetch failed", e);
+        } finally {
+            if (btn) btn.innerHTML = originalText;
+        }
+    }
+
     if (user) {
         ui.renderResult(user, nameInput);
-        const alreadyChecked = currentCheckins.some(c => sanitizePhoneNumber(c.phone) === sanitizedPhone);
-        if (!alreadyChecked) {
+
+        // Optimized Check: Query DB specifically for this user
+        const isAlreadyCheckedIn = await checkParticipantStatus(sanitizedPhone);
+
+        if (!isAlreadyCheckedIn) {
             try {
-                const checkinsRef = collection(db, 'artifacts', appId, 'public', 'data', 'checkins');
-                await addDoc(checkinsRef, {
+                const checkinDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'checkins', sanitizedPhone);
+                await setDoc(checkinDocRef, {
                     name: user.name || user.이름 || nameInput,
                     phone: sanitizedPhone,
                     activity: user.activity_name || user.액티비티 || user.bus || 'Activity',
@@ -82,10 +113,13 @@ window.handleLookup = async () => {
                     checkedInAt: new Date().toISOString()
                 });
             } catch (e) { console.error("Checkin log failed", e); }
+            ui.showView('result-view');
+        } else {
+            ui.showView('error-view');
         }
-        ui.showView('result-view');
     } else {
-        ui.showView('error-view');
+        // Explicitly show error if still not found
+        alert("참가자 정보를 찾을 수 없습니다. (User Not Found)");
     }
 };
 
@@ -120,14 +154,19 @@ window.submitPassword = () => {
         document.getElementById('password-modal')?.classList.add('hidden');
         document.getElementById('password-error')?.classList.add('hidden');
         ui.showView('admin-view');
-        // Lazy subscribe
+        // Admin Mode: Now we need the full list
         if (!checkinsUnsubscribe) {
             checkinsUnsubscribe = listenToCheckins((data) => {
                 currentCheckins = data;
+                window.currentCheckins = currentCheckins; // Expose for testing
                 const searchVal = document.getElementById('admin-search-input')?.value.toLowerCase().trim() || '';
                 ui.updateAdminDashboard(PARTICIPANTS, currentCheckins, currentSortMode, searchVal);
             });
         }
+
+        // Initial render (might be empty initially until callback fires)
+        const searchVal = document.getElementById('admin-search-input')?.value.toLowerCase().trim() || '';
+        ui.updateAdminDashboard(PARTICIPANTS, currentCheckins, currentSortMode, searchVal);
     } else {
         document.getElementById('password-error')?.classList.remove('hidden');
     }
@@ -247,6 +286,7 @@ if (csvUpload) csvUpload.onchange = async (e) => {
             if (!line) continue;
             const cols = parseCSVLine(line);
             const p = {
+                // Use the index lookup OR the flexible header lookup
                 name: cols[getIdx('이름')] || cols[0] || '',
                 department: cols[getIdx('부서')] || cols[1] || '',
                 phone: sanitizePhoneNumber(cols[getIdx('휴대전화')] || cols[2] || ''),
@@ -254,8 +294,9 @@ if (csvUpload) csvUpload.onchange = async (e) => {
                 start_time: cols[getIdx('출발시간')] || cols[4] || '',
                 meeting_point: cols[getIdx('집합장소')] || cols[5] || '',
                 guide_info: cols[getIdx('가이드 정보')] || cols[6] || '',
-                schedule_1: cols[getIdx('일정 1')] || cols[7] || '',
-                schedule_2: cols[getIdx('일정 2')] || cols[8] || '',
+                // Flexible matching for schedules
+                schedule_1: cols[getIdx('일정 1')] || cols[getIdx('일정1')] || cols[7] || '',
+                schedule_2: cols[getIdx('일정 2')] || cols[getIdx('일정2')] || cols[8] || '',
                 schedule_3: cols[getIdx('일정 3')] || cols[9] || '',
                 supplies: cols[getIdx('준비물')] || cols[10] || '',
                 notice: cols[getIdx('주의사항')] || cols[11] || ''

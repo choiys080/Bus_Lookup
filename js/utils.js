@@ -46,3 +46,18 @@ export function getStats(participants, checkins) {
     });
     return stats;
 }
+
+// Helper to loosely match headers
+export function getSafeHeader(row, possibleHeaders) {
+    // defined headers we want
+    for (const h of possibleHeaders) {
+        // check actual keys in the row
+        for (const key of Object.keys(row)) {
+            // remove spaces and lowercase for comparison
+            if (key.replace(/\s/g, '').toLowerCase() === h.replace(/\s/g, '').toLowerCase()) {
+                return row[key];
+            }
+        }
+    }
+    return '';
+}

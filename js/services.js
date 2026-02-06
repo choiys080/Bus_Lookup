@@ -1,5 +1,5 @@
 import { db, appId } from './config.js';
-import { collection, doc, getDocs, writeBatch, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { collection, doc, getDocs, writeBatch, query, orderBy, onSnapshot, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 import { chunkArray } from './utils.js';
 
 const BATCH_SIZE = 450;
@@ -17,6 +17,13 @@ export function listenToCheckins(callback) {
         const checkins = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
         callback(checkins);
     }, (error) => console.error('Check-in listener error:', error));
+}
+
+export async function checkParticipantStatus(phone) {
+    const checkinsRef = collection(db, 'artifacts', appId, 'public', 'data', 'checkins');
+    const q = query(checkinsRef, where('phone', '==', phone));
+    const snapshot = await getDocs(q);
+    return !snapshot.empty;
 }
 
 export async function batchDeleteAll(collectionName) {

@@ -91,7 +91,21 @@ export function updateAdminDashboard(participants, checkins, sortMode, searchVal
     const totalEl = document.getElementById('admin-total-count');
     const checkedEl = document.getElementById('admin-checked-count');
     if (totalEl) totalEl.textContent = participants.length;
-    if (checkedEl) checkedEl.textContent = checkins.length;
+
+    // Calculate Valid Unique Check-ins (Matches List View logic)
+    const checkedPhones = new Set();
+    checkins.forEach(c => {
+        const sPhone = sanitizePhoneNumber(c.phone || '');
+        if (sPhone) checkedPhones.add(sPhone);
+    });
+
+    let validCheckedCount = 0;
+    participants.forEach(p => {
+        const sPhone = sanitizePhoneNumber(p.phone || p.휴대전화 || '');
+        if (checkedPhones.has(sPhone)) validCheckedCount++;
+    });
+
+    if (checkedEl) checkedEl.textContent = validCheckedCount;
 
     const logEl = document.getElementById('checkin-log');
     if (logEl) {
