@@ -2,7 +2,7 @@ import { db, appId } from './config.js';
 import { collection, doc, getDocs, writeBatch, query, orderBy, onSnapshot, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 import { chunkArray } from './utils.js';
 
-const BATCH_SIZE = 450;
+const BATCH_SIZE = 100;
 
 export async function fetchParticipants() {
     const dataCol = collection(db, 'artifacts', appId, 'public', 'data', 'participants');
@@ -39,10 +39,11 @@ export async function batchDeleteAll(collectionName) {
 }
 
 export async function batchUploadParticipants(newData) {
-    await batchDeleteAll('participants');
+    // Skip delete to avoid timeout - just overwrite existing data
     const chunks = chunkArray(newData, BATCH_SIZE);
     let globalIndex = 0;
-    for (const chunk of chunks) {
+    for (let i = 0; i < chunks.length; i++) {
+        const chunk = chunks[i];
         const batch = writeBatch(db);
         chunk.forEach(p => {
             const ref = doc(db, 'artifacts', appId, 'public', 'data', 'participants', `p_${globalIndex++}`);
