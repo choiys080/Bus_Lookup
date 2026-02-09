@@ -42,9 +42,6 @@ onAuthStateChanged(auth, async (user) => {
         if (loadingMsg) loadingMsg.textContent = "Loading Participant Data...";
         try {
             PARTICIPANTS = await fetchParticipants();
-            console.log(`System: Loaded ${PARTICIPANTS.length} participants.`);
-
-            PARTICIPANTS = await fetchParticipants();
             window.PARTICIPANTS = PARTICIPANTS; // Expose for testing
             console.log(`System: Loaded ${PARTICIPANTS.length} participants.`);
             ui.showView('input-view');
@@ -58,7 +55,6 @@ onAuthStateChanged(auth, async (user) => {
 window.showView = ui.showView;
 
 window.handleLookup = async () => {
-    const nameInput = document.getElementById('name-input')?.value.trim();
     const phoneInput = document.getElementById('phone-input')?.value;
     const countryCodeInput = document.getElementById('country-code-input')?.value;
 
@@ -67,7 +63,7 @@ window.handleLookup = async () => {
     const combinedPhone = countryCodeInput + phoneInput;
     const sanitizedPhone = sanitizePhoneNumber(combinedPhone);
 
-    // 1. Try finding them in current memory
+    // 1. Try finding them in current memory (Matching by Phone ONLY)
     let user = PARTICIPANTS.find(u => {
         const storedPhone = sanitizePhoneNumber(u.phone || u.휴대전화 || '');
         return storedPhone === sanitizedPhone;
@@ -97,7 +93,7 @@ window.handleLookup = async () => {
     }
 
     if (user) {
-        ui.renderResult(user, nameInput);
+        ui.renderResult(user, '');
 
         // Optimized Check: Query DB specifically for this user
         const isAlreadyCheckedIn = await checkParticipantStatus(sanitizedPhone);
@@ -106,20 +102,17 @@ window.handleLookup = async () => {
             try {
                 const checkinDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'checkins', sanitizedPhone);
                 await setDoc(checkinDocRef, {
-                    name: user.name || user.이름 || nameInput,
+                    name: user.name || user.이름 || '',
                     phone: sanitizedPhone,
                     activity: user.activity_name || user.액티비티 || user.bus || 'Activity',
                     department: user.department || user.부서 || '',
                     checkedInAt: new Date().toISOString()
                 });
             } catch (e) { console.error("Checkin log failed", e); }
-            ui.showView('result-view');
-        } else {
-            ui.showView('error-view');
         }
+        ui.showView('result-view');
     } else {
-        // Explicitly show error if still not found
-        alert("참가자 정보를 찾을 수 없습니다. (User Not Found)");
+        ui.showView('error-view');
     }
 };
 
