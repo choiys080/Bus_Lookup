@@ -324,3 +324,4 @@ document.getElementById('password-input')?.addEventListener('keypress', (e) => {
 // STARTUP
 initAuth();
 if (window.lucide) window.lucide.createIcons();
+// force update v1.0.3
