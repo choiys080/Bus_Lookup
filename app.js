@@ -1,3 +1,4 @@
+// Version: 1.0.1 - Deployment Refresh
 import { auth, db, appId } from './js/config.js';
 import { signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 import { collection, addDoc, setDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
@@ -299,10 +300,12 @@ if (csvUpload) csvUpload.onchange = async (e) => {
         if (newData.length > 0) {
             try {
                 const msg = document.getElementById('upload-msg');
-                if (msg) msg.innerHTML = '<span class="animate-pulse">Syncing...</span>';
-                await batchUploadParticipants(newData);
+                if (msg) msg.innerHTML = '<span class="animate-pulse">Starting Sync...</span>';
+                await batchUploadParticipants(newData, (pct) => {
+                    if (msg) msg.innerHTML = `<span class="animate-pulse">Syncing: ${pct}%</span>`;
+                });
                 PARTICIPANTS = await fetchParticipants();
-                if (msg) msg.innerHTML = 'Done';
+                if (msg) msg.innerHTML = 'Sync Complete';
                 setTimeout(() => { if (msg) msg.innerHTML = ''; }, 4000);
                 if (window.lucide) window.lucide.createIcons();
             } catch (error) {

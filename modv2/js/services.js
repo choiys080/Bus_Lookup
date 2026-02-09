@@ -38,7 +38,7 @@ export async function batchDeleteAll(collectionName) {
     }
 }
 
-export async function batchUploadParticipants(newData) {
+export async function batchUploadParticipants(newData, onProgress) {
     // Skip delete to avoid timeout - just overwrite existing data
     const chunks = chunkArray(newData, BATCH_SIZE);
     let globalIndex = 0;
@@ -50,5 +50,6 @@ export async function batchUploadParticipants(newData) {
             batch.set(ref, p);
         });
         await batch.commit();
+        if (onProgress) onProgress(Math.round(((i + 1) / chunks.length) * 100));
     }
 }

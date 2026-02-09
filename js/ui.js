@@ -187,8 +187,11 @@ export function renderAttendanceList(participants, checkins, sortMode, searchVal
 
     displayData.sort((a, b) => {
         if (sortMode === 'status') {
-            if (a.isChecked === b.isChecked) return (a.name || a.이름 || '').localeCompare(b.name || b.이름 || '');
-            return a.isChecked ? 1 : -1;
+            // Sort by isChecked (true first), then by name
+            if (a.isChecked !== b.isChecked) {
+                return a.isChecked ? -1 : 1;
+            }
+            return (a.name || a.이름 || '').localeCompare(b.name || b.이름 || '');
         } else if (sortMode === 'course') {
             const courseA = (a.activity_name || a.액티비티 || a.bus || '').toLowerCase();
             const courseB = (b.activity_name || b.액티비티 || b.bus || '').toLowerCase();
@@ -197,6 +200,7 @@ export function renderAttendanceList(participants, checkins, sortMode, searchVal
             }
             return courseA.localeCompare(courseB);
         }
+        // Default sort by name
         return (a.name || a.이름 || '').localeCompare(b.name || b.이름 || '');
     });
 
