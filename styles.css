@@ -1,8 +1,30 @@
 body {
     font-family: 'Arial', sans-serif !important;
-    background: url('bg.png') no-repeat center center fixed;
-    background-size: cover;
     color: #000000;
+    margin: 0;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background: url('bg.png') no-repeat top center;
+    background-size: cover;
+    z-index: -1;
+    /* Optimized for mobile: prevent repaint on scroll */
+    will-change: transform;
+}
+
+/* Internal Page Clean Layout (Requested: "Clean Layout with background removal") */
+body.internal-clean {
+    background: #FFFFFF !important;
+}
+
+body.internal-clean::before {
+    display: none !important;
 }
 
 h1,

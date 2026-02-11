@@ -8,6 +8,27 @@ export function showView(id) {
     const target = document.getElementById(id);
     if (target) target.classList.remove('hidden');
 
+    // Design Requirement: "Result/Ticket View" should be clean white background without the image
+    if (id === 'result-view') {
+        document.body.classList.add('internal-clean');
+        // Ensure the app container doesn't double-up the background or shadow in clean mode if needed
+        const app = document.getElementById('app');
+        if (app) {
+            app.classList.remove('shadow-premium', 'border', 'border-slate-200/60');
+            app.classList.add('bg-transparent', 'shadow-none', 'border-0');
+        }
+    } else {
+        document.body.classList.remove('internal-clean');
+        // Revert app container styles for Landing/Input view
+        // BUT KEEP IT TRANSPARENT as per latest request
+        const app = document.getElementById('app');
+        if (app) {
+            // No background/blur added back here!
+            app.classList.remove('bg-white/80', 'backdrop-blur-md', 'shadow-premium', 'border', 'border-slate-200/60');
+            app.classList.add('bg-transparent', 'shadow-none', 'border-0');
+        }
+    }
+
     const adminIcon = document.getElementById('admin-icon');
     const adminTrigger = document.getElementById('admin-trigger');
 

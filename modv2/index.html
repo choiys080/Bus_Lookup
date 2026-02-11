@@ -11,25 +11,14 @@
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
-<body class="bg-slate-100 min-h-screen flex flex-col items-center p-4 sm:p-8">
-    <div id="app"
-        class="w-full max-w-md bg-white rounded-[3rem] shadow-premium border border-slate-200/60 min-h-[600px] flex flex-col relative overflow-hidden">
+<body class="min-h-[100dvh] flex flex-col items-center p-4 sm:p-8">
+    <div id="app" class="w-full max-w-md rounded-[3rem] flex flex-col relative overflow-hidden z-10">
 
         <!-- HEADER -->
-        <div
-            class="bg-white/80 backdrop-blur-md px-8 py-7 flex justify-between items-center relative border-b border-slate-100/10 z-50">
-            <div class="flex items-center gap-4">
-                <div
-                    class="w-11 h-11 bg-gradient-to-tr from-[#00A97A] to-[#00C896] rounded-2xl flex items-center justify-center shadow-lg shadow-[#00A97A]/20">
-                    <i data-lucide="building-2" class="w-6 h-6 text-white"></i>
-                </div>
-                <div class="flex flex-col">
-                    <span class="text-[10px] font-black text-[#00A97A] tracking-[0.25em] leading-none mb-1">B.
-                        Braun</span>
-                    <span
-                        class="text-xs font-heading font-black text-slate-900 tracking-tight uppercase leading-none">Activity
-                        Portal</span>
-                </div>
+        <div class="px-8 py-7 flex justify-between items-center relative z-50">
+            <div class="flex items-center gap-4 opacity-0">
+                <!-- HIDDEN: Logo/Text are in the background image -->
+                <div class="w-11 h-11"></div>
             </div>
             <div class="flex items-center gap-3">
                 <div id="admin-trigger" onclick="toggleAdmin()"
@@ -177,16 +166,16 @@
             </div>
 
             <!-- VIEW: INPUT (LOGIN) -->
-            <div id="input-view" class="hidden slide-in flex flex-col flex-1">
-                <div class="space-y-6">
-                    <!-- EVENT VISUAL IMAGE PLACEHOLDER -->
-                    <div class="h-44 bg-white/50 flex items-center justify-center rounded-3xl mb-6 overflow-hidden">
-                        <img src="kickoff_logo.jpg" alt="Kickoff Logo" class="max-h-full max-w-full object-contain">
-                    </div>
+            <div id="input-view" class="hidden slide-in flex flex-col flex-1 justify-end pb-10">
+                <!-- Spacer to reveal Background Logo -->
+                <div class="flex-1 min-h-[160px]"></div>
+
+                <!-- Removed bg-white card to show background -->
+                <div class="space-y-6 p-2">
 
                     <!-- ACTIVITY SELECTION BAR -->
                     <div
-                        class="bg-[#9E2AB5] text-white py-3 px-6 rounded-lg text-center shadow-lg shadow-[#9E2AB5]/20 mb-4">
+                        class="bg-[#9E2AB5]/90 backdrop-blur-md text-white py-4 px-6 rounded-2xl text-center shadow-lg shadow-[#9E2AB5]/20 mb-6 border border-white/10">
                         <span class="text-sm font-black uppercase tracking-tight">Day 2 (12-Mar) 선택 Activity</span>
                     </div>
 
@@ -197,11 +186,11 @@
                                 class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">성명</label>
                             <div class="relative group">
                                 <div
-                                    class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-slate-300">
+                                    class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-slate-500">
                                     <i data-lucide="user" class="w-5 h-5"></i>
                                 </div>
                                 <input type="text" id="name-input" placeholder="성명" disabled readonly
-                                    class="w-full pl-12 pr-5 py-4 bg-slate-100 border border-slate-200 rounded-2xl outline-none font-semibold text-slate-400 cursor-not-allowed">
+                                    class="w-full pl-12 pr-5 py-4 bg-white/60 backdrop-blur-sm border border-slate-200/50 rounded-2xl outline-none font-bold text-slate-600 cursor-not-allowed shadow-sm">
                             </div>
                         </div>
 
@@ -217,7 +206,7 @@
                                     </div>
                                     <input type="tel" id="country-code-input" value="82" title="Country Code"
                                         aria-label="Country Code"
-                                        class="w-full pl-6 pr-3 py-4 bg-slate-50 border border-slate-100/50 rounded-2xl focus:ring-4 focus:ring-[#00A97A]/10 focus:border-[#00A97A] outline-none transition-soft font-semibold text-slate-800 text-center">
+                                        class="w-full pl-6 pr-3 py-4 bg-white/90 backdrop-blur-sm border border-slate-200/50 rounded-2xl focus:ring-4 focus:ring-[#00A97A]/10 focus:border-[#00A97A] outline-none transition-soft font-semibold text-slate-800 text-center shadow-sm">
                                 </div>
                                 <!-- Phone Body -->
                                 <div class="relative flex-1 group">
@@ -226,13 +215,13 @@
                                         <i data-lucide="phone" class="w-5 h-5 text-slate-300"></i>
                                     </div>
                                     <input type="tel" id="phone-input" placeholder="010-0000-0000"
-                                        class="w-full pl-12 pr-5 py-4 bg-slate-50 border border-slate-100/50 rounded-2xl focus:ring-4 focus:ring-[#00A97A]/10 focus:border-[#00A97A] outline-none transition-soft placeholder:text-slate-300 font-semibold text-slate-800">
+                                        class="w-full pl-12 pr-5 py-4 bg-white/90 backdrop-blur-sm border border-slate-200/50 rounded-2xl focus:ring-4 focus:ring-[#00A97A]/10 focus:border-[#00A97A] outline-none transition-soft placeholder:text-slate-400 font-semibold text-slate-800 shadow-sm">
                                 </div>
                             </div>
                         </div>
 
                         <button onclick="handleLookup()" id="verify-btn"
-                            class="w-full bg-[#00A97A] text-white py-5 rounded-2xl font-black text-lg shadow-xl shadow-[#00A97A]/20 hover:shadow-[#00A97A]/40 hover:-translate-y-0.5 active:translate-y-0 transition-soft flex items-center justify-center gap-3 uppercase tracking-tight mt-4">
+                            class="w-full bg-[#00A97A]/90 backdrop-blur-sm text-white py-5 rounded-2xl font-black text-lg shadow-xl shadow-[#00A97A]/20 hover:shadow-[#00A97A]/40 hover:-translate-y-0.5 active:translate-y-0 transition-soft flex items-center justify-center gap-3 uppercase tracking-tight mt-6 border border-white/10">
                             <span>지금 확인하기</span>
                             <i data-lucide="chevron-right" class="w-6 h-6"></i>
                         </button>
