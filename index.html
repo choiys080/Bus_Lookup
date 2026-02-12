@@ -9,6 +9,40 @@
     <link rel="stylesheet" href="./styles.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- CRITICAL DEBUG HANDLER FOR IPHONE -->
+    <script>
+        window.onerror = function (msg, url, line, col, error) {
+            const debug = document.createElement('div');
+            debug.style.position = 'fixed';
+            debug.style.top = '0';
+            debug.style.left = '0';
+            debug.style.width = '100%';
+            debug.style.background = 'rgba(255,0,0,0.9)';
+            debug.style.color = 'white';
+            debug.style.zIndex = '9999999';
+            debug.style.padding = '10px';
+            debug.style.fontSize = '12px';
+            debug.style.wordBreak = 'break-all';
+            debug.innerHTML = '<strong>RUNTIME ERROR:</strong> ' + msg + '<br>@ ' + url + ':' + line;
+            document.body.appendChild(debug);
+            return false;
+        };
+        window.onunhandledrejection = function (event) {
+            const debug = document.createElement('div');
+            debug.style.position = 'fixed';
+            debug.style.bottom = '0';
+            debug.style.left = '0';
+            debug.style.width = '100%';
+            debug.style.background = 'rgba(0,0,255,0.9)';
+            debug.style.color = 'white';
+            debug.style.zIndex = '9999999';
+            debug.style.padding = '10px';
+            debug.style.fontSize = '12px';
+            debug.style.wordBreak = 'break-all';
+            debug.innerHTML = '<strong>PROMISE REJECTION:</strong> ' + (event.reason ? event.reason.message || event.reason : 'Unknown reason');
+            document.body.appendChild(debug);
+        };
+    </script>
 </head>
 
 <body class="min-h-[100dvh] flex flex-col items-center p-4 sm:p-8">
@@ -202,7 +236,7 @@
                                 <!-- Country Code -->
                                 <div class="relative w-24 group">
                                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <span class="text-slate-400 font-bold text-sm">+</span>
+                                        <span class="text-slate-700 font-bold text-base">+</span>
                                     </div>
                                     <input type="tel" id="country-code-input" value="82" title="Country Code"
                                         aria-label="Country Code"
