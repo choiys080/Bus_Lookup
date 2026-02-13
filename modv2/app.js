@@ -1,4 +1,4 @@
-// Version: 1.0.1 - Deployment Refresh
+// Version: 1.1.1 - Background Optimization & Logic Fix
 import { auth, db, appId } from './js/config.js';
 import { signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 import { collection, addDoc, setDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
@@ -13,25 +13,45 @@ let currentSortMode = 'status';
 let currentUser = null;
 let checkinsUnsubscribe = null;
 
+// IN-APP LOGGING (Hidden by default, used for Production Debugging)
+const debugLog = (msg) => {
+    console.log(msg);
+    const consoleEl = document.getElementById('debug-console');
+    if (consoleEl) {
+        const line = document.createElement('div');
+        line.style.borderBottom = '1px solid rgba(0,0,0,0.1)';
+        line.style.padding = '4px 0';
+        line.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+        consoleEl.prepend(line);
+    }
+};
+window.debugLog = debugLog;
+
 // AUTH INIT
 const initAuth = async () => {
-    console.log("System: initAuth started");
     const loadingMsg = document.querySelector('#loading-view p.animate-pulse');
-    if (loadingMsg) loadingMsg.textContent = "Connecting to Authentication...";
+    if (loadingMsg) loadingMsg.textContent = "Connecting...";
+
+    const authTimeout = setTimeout(() => {
+        if (loadingMsg) {
+            loadingMsg.innerHTML = 'Still connecting... <button onclick="location.reload()" class="underline ml-2">Retry?</button>';
+        }
+    }, 10000);
 
     if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
         try {
             await signInWithCustomToken(auth, __initial_auth_token);
+            clearTimeout(authTimeout);
         } catch (e) {
-            console.error("Custom token auth failed", e);
-            await signInAnonymously(auth);
+            await signInAnonymously(auth).finally(() => clearTimeout(authTimeout));
         }
     } else {
         try {
             await signInAnonymously(auth);
+            clearTimeout(authTimeout);
         } catch (e) {
-            console.error("System: Auth failed", e);
-            ui.showConnectionError("Authentication Failed: " + e.message);
+            clearTimeout(authTimeout);
+            ui.showConnectionError("Auth Error: " + e.message);
         }
     }
 };
@@ -43,8 +63,7 @@ onAuthStateChanged(auth, async (user) => {
         if (loadingMsg) loadingMsg.textContent = "Loading Participant Data...";
         try {
             PARTICIPANTS = await fetchParticipants();
-            window.PARTICIPANTS = PARTICIPANTS; // Expose for testing
-            console.log(`System: Loaded ${PARTICIPANTS.length} participants.`);
+            window.PARTICIPANTS = PARTICIPANTS;
             ui.showView('input-view');
         } catch (err) {
             ui.showConnectionError("데이터 연결 실패: " + err.message);
@@ -55,79 +74,83 @@ onAuthStateChanged(auth, async (user) => {
 // PUBLIC INTERFACE (Window exposed)
 window.showView = ui.showView;
 
-window.handleLookup = async () => {
-    const phoneInput = document.getElementById('phone-input')?.value;
-    const countryCodeInput = document.getElementById('country-code-input')?.value;
-
-    if (!phoneInput) { alert("연락처를 입력해주세요."); return; }
-
-    const combinedPhone = countryCodeInput + phoneInput;
-    const sanitizedPhone = sanitizePhoneNumber(combinedPhone);
-
-    // 1. Try finding them in current memory (Matching by Phone ONLY)
-    let user = PARTICIPANTS.find(u => {
-        const storedPhone = sanitizePhoneNumber(u.phone || u.휴대전화 || '');
-        return storedPhone === sanitizedPhone;
-    });
-
-    // 2. THE FIX: If not found, fetch fresh data and try again
-    if (!user) {
-        // Show a temporary loading state on the button
-        const btn = document.getElementById('verify-btn');
-        const originalText = btn ? btn.innerHTML : '';
-        if (btn) btn.innerHTML = '<span class="animate-spin">↻</span> Checking Server...';
-
+const handleLookup = () => {
+    (async () => {
         try {
-            console.log("User not found locally. Fetching fresh data...");
-            PARTICIPANTS = await fetchParticipants();
+            const phoneVal = document.getElementById('phone-input')?.value;
+            const codeVal = document.getElementById('country-code-input')?.value;
 
-            // Try finding them again in the fresh list
-            user = PARTICIPANTS.find(u => {
-                const storedPhone = sanitizePhoneNumber(u.phone || u.휴대전화 || '');
-                return storedPhone === sanitizedPhone;
+            if (!phoneVal) {
+                alert("연락처를 입력해주세요.");
+                return;
+            }
+
+            const combinedPhone = (codeVal || '') + phoneVal;
+            const sanitizedPhone = sanitizePhoneNumber(combinedPhone);
+
+            if (PARTICIPANTS.length === 0) {
+                PARTICIPANTS = await fetchParticipants();
+            }
+
+            // Perform Search
+            let user = PARTICIPANTS.find(u => {
+                const storedRaw = u.phone || u.휴대전화 || '';
+                const storedSanitized = sanitizePhoneNumber(storedRaw);
+                return storedSanitized === sanitizedPhone;
             });
-        } catch (e) {
-            console.error("Emergency fetch failed", e);
-        } finally {
-            if (btn) btn.innerHTML = originalText;
-        }
-    }
 
-    if (user) {
-        ui.renderResult(user, '');
+            if (!user) {
+                const btn = document.getElementById('verify-btn');
+                const originalText = btn ? btn.innerHTML : '';
+                if (btn) btn.innerHTML = 'Checking...';
 
-        // Optimized Check: Query DB specifically for this user
-        const isAlreadyCheckedIn = await checkParticipantStatus(sanitizedPhone);
+                try {
+                    PARTICIPANTS = await fetchParticipants();
+                    user = PARTICIPANTS.find(u => {
+                        const s = sanitizePhoneNumber(u.phone || u.휴대전화 || '');
+                        return s === sanitizedPhone;
+                    });
+                } finally {
+                    if (btn) btn.innerHTML = originalText;
+                }
+            }
 
-        if (!isAlreadyCheckedIn) {
-            try {
-                const checkinDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'checkins', sanitizedPhone);
-                await setDoc(checkinDocRef, {
-                    name: user.name || user.이름 || '',
-                    phone: sanitizedPhone,
-                    activity: user.activity_name || user.액티비티 || user.bus || 'Activity',
-                    department: user.department || user.부서 || '',
-                    checkedInAt: new Date().toISOString()
+            if (user) {
+                ui.renderResult(user, '');
+                ui.showView('result-view');
+
+                // Logging check-in (deferred)
+                checkParticipantStatus(sanitizedPhone).then(exists => {
+                    if (!exists) {
+                        const ref = doc(db, 'artifacts', appId, 'public', 'data', 'checkins', sanitizedPhone);
+                        setDoc(ref, {
+                            name: user.name || user.이름 || '',
+                            phone: sanitizedPhone,
+                            activity: user.activity_name || user.액티비티 || user.bus || 'Activity',
+                            department: user.department || user.부서 || '',
+                            checkedInAt: new Date().toISOString()
+                        });
+                    }
                 });
-            } catch (e) { console.error("Checkin log failed", e); }
+            } else {
+                ui.showView('error-view');
+            }
+        } catch (globalErr) {
+            console.error("Lookup Runtime Error:", globalErr);
+            debugLog("Runtime Error: " + globalErr.message);
         }
-        ui.showView('result-view');
-    } else {
-        ui.showView('error-view');
-    }
+    })();
 };
 
-window.resetApp = () => {
-    const n = document.getElementById('name-input');
+const resetApp = () => {
     const p = document.getElementById('phone-input');
     const c = document.getElementById('country-code-input');
-    if (n) n.value = '';
     if (p) p.value = '';
     if (c) c.value = '82';
     ui.showView('input-view');
 };
 
-window.toggleAdmin = () => {
+const toggleAdmin = () => {
     const adminView = document.getElementById('admin-view');
     if (adminView && !adminView.classList.contains('hidden')) {
         ui.showView('input-view');
@@ -323,6 +346,51 @@ document.getElementById('password-input')?.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') window.submitPassword();
 });
 
-// STARTUP
-initAuth();
-if (window.lucide) window.lucide.createIcons();
+// STARTUP & LISTENERS
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Button Attachments
+    const vBtn = document.getElementById('verify-btn');
+    if (vBtn) {
+        vBtn.addEventListener('click', handleLookup);
+        vBtn.addEventListener('touchend', (e) => { e.preventDefault(); handleLookup(); });
+    }
+
+    const aBtn = document.getElementById('admin-trigger');
+    if (aBtn) {
+        aBtn.addEventListener('click', toggleAdmin);
+        aBtn.addEventListener('touchend', (e) => { e.preventDefault(); toggleAdmin(); });
+    }
+
+    const rBtn = document.getElementById('reset-btn');
+    if (rBtn) {
+        rBtn.addEventListener('click', resetApp);
+        rBtn.addEventListener('touchend', (e) => { e.preventDefault(); resetApp(); });
+    }
+
+    // 2. Initial Auth
+    initAuth();
+    if (window.lucide) window.lucide.createIcons();
+
+    // 3. Background Loading (JS-Controlled for Memory Safety)
+    setTimeout(() => {
+        const img = new Image();
+        img.src = 'bg_optimized.jpg';
+
+        img.decode().then(() => {
+            const style = document.createElement('style');
+            style.innerHTML = `body::before {
+                background: url('bg_optimized.jpg') no-repeat top center !important;
+                background-size: cover !important;
+                position: fixed !important;
+                opacity: 1 !important;
+                transition: opacity 1.5s ease-in-out !important;
+            }`;
+            document.head.appendChild(style);
+        }).catch((err) => {
+            console.error("Background decode failed", err);
+            const style = document.createElement('style');
+            style.innerHTML = `body::before { opacity: 1 !important; }`;
+            document.head.appendChild(style);
+        });
+    }, 1000);
+});

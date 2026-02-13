@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getAuth, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
 const firebaseConfig = typeof __firebase_config !== 'undefined'
@@ -16,6 +16,7 @@ const firebaseConfig = typeof __firebase_config !== 'undefined'
 
 export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
+setPersistence(auth, browserLocalPersistence).catch(err => console.error("Persistence failed", err));
 export const db = getFirestore(app);
 // Hardcoded to prevent data bleeding into the default bucket
 export const appId = 'b-braun-event-2026-production';

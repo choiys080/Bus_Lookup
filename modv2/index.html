@@ -9,10 +9,19 @@
     <link rel="stylesheet" href="./styles.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        window.onerror = function (msg) {
+            const h = document.getElementById('debug-console');
+            if (h) { h.classList.remove('hidden'); h.textContent += '\nERR: ' + msg; }
+        };
+    </script>
+    <!-- Mobile Optimized Background Fallback Support -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head>
 
 <body class="min-h-[100dvh] flex flex-col items-center p-4 sm:p-8">
-    <div id="app" class="w-full max-w-md rounded-[3rem] flex flex-col relative overflow-hidden z-10">
+    <div id="app" class="w-full max-w-md rounded-[3rem] flex flex-col relative z-10">
 
         <!-- HEADER -->
         <div class="px-8 py-7 flex justify-between items-center relative z-50">
@@ -21,7 +30,7 @@
                 <div class="w-11 h-11"></div>
             </div>
             <div class="flex items-center gap-3">
-                <div id="admin-trigger" onclick="toggleAdmin()"
+                <div id="admin-trigger"
                     class="group cursor-pointer bg-slate-50 hover:bg-slate-900 p-2.5 rounded-xl transition-soft border border-slate-100 shadow-sm hover:shadow-lg active:scale-95">
                     <i data-lucide="settings" id="admin-icon"
                         class="w-5 h-5 text-slate-400 group-hover:text-white transition-soft"></i>
@@ -31,7 +40,8 @@
 
         <!-- DECORATION -->
         <div class="absolute -top-10 -left-10 w-40 h-40 bg-[#00A97A]/10 rounded-full blur-3xl"></div>
-        <div class="absolute -bottom-10 -right-10 w-40 h-40 bg-[#9E2AB5]/10 rounded-full blur-3xl"></div>
+        <div class="absolute -bottom-10 -right-10 w-40 h-40 bg-[#9E2AB5]/10 rounded-full blur-3xl">
+        </div>
 
         <div class="p-8 relative min-h-[400px] flex flex-col" id="content-area">
 
@@ -201,12 +211,13 @@
                             <div class="flex gap-2">
                                 <!-- Country Code -->
                                 <div class="relative w-24 group">
-                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <span class="text-slate-400 font-bold text-sm">+</span>
-                                    </div>
                                     <input type="tel" id="country-code-input" value="82" title="Country Code"
                                         aria-label="Country Code"
                                         class="w-full pl-6 pr-3 py-4 bg-white/90 backdrop-blur-sm border border-slate-200/50 rounded-2xl focus:ring-4 focus:ring-[#00A97A]/10 focus:border-[#00A97A] outline-none transition-soft font-semibold text-slate-800 text-center shadow-sm">
+                                    <div
+                                        class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+                                        <i data-lucide="plus" class="w-3.5 h-3.5 text-slate-400"></i>
+                                    </div>
                                 </div>
                                 <!-- Phone Body -->
                                 <div class="relative flex-1 group">
@@ -220,7 +231,7 @@
                             </div>
                         </div>
 
-                        <button onclick="handleLookup()" id="verify-btn"
+                        <button id="verify-btn"
                             class="w-full bg-[#00A97A]/90 backdrop-blur-sm text-white py-5 rounded-2xl font-black text-lg shadow-xl shadow-[#00A97A]/20 hover:shadow-[#00A97A]/40 hover:-translate-y-0.5 active:translate-y-0 transition-soft flex items-center justify-center gap-3 uppercase tracking-tight mt-6 border border-white/10">
                             <span>지금 확인하기</span>
                             <i data-lucide="chevron-right" class="w-6 h-6"></i>
@@ -230,116 +241,84 @@
             </div>
 
             <!-- VIEW: RESULT (ITINERARY) -->
-            <div id="result-view" class="hidden slide-in space-y-10 flex-1">
-                <!-- Header -->
-                <div class="text-center pb-5 border-b border-slate-100 relative">
-                    <div class="space-y-2">
-                        <h3 class="text-3xl font-black text-black tracking-tight leading-tight"><span id="res-name"
-                                class="text-[#00A97A]">User</span>님</h3>
-                        <div
-                            class="inline-flex items-center gap-2 px-3 py-1 bg-slate-50 rounded-full border border-slate-100">
-                            <div class="w-1.5 h-1.5 rounded-full bg-[#00A97A] animate-pulse"></div>
-                            <p id="res-dept" class="text-[10px] text-black font-black uppercase tracking-widest">
-                            </p>
-                        </div>
+            <div id="result-view" class="hidden slide-in space-y-4 flex-1">
+
+                <!-- Name & Dept (No initials) -->
+                <div class="text-center">
+                    <div class="space-y-1">
+                        <h3 class="text-[18px] font-black text-black tracking-tight"><span id="res-name">User</span> 님
+                        </h3>
+                        <p id="res-dept" class="text-[9px] text-slate-400 font-bold uppercase tracking-widest"></p>
                     </div>
                 </div>
 
-                <!-- Activity Header Bar -->
-                <div
-                    class="bg-[#9E2AB5] text-white py-3 px-8 rounded-2xl text-center shadow-lg shadow-[#9E2AB5]/20 mb-4 relative z-10 mx-4">
-                    <span class="text-sm font-black uppercase tracking-tight">Day 2 (12-Mar) 선택 Activity</span>
-                </div>
-
-                <!-- Course Title (One Line, Larger, Bold) -->
-                <div class="px-6 py-6 bg-slate-50 border border-slate-100 rounded-[2.5rem] text-center shadow-sm">
-                    <h4 id="res-activity-detail" class="text-2xl font-black text-black tracking-tight leading-tight">
+                <!-- Course Title (Confirmation Box - Yellow) -->
+                <div class="px-5 py-6 bg-[#FEF9E7] border border-[#F9EAB8] rounded-xl text-center mx-3">
+                    <p class="text-[10px] text-slate-500 font-bold mb-1">선택투어는</p>
+                    <h4 id="res-activity-detail" class="text-[16px] font-black text-black tracking-tight leading-tight">
                         Activity Name</h4>
+                    <p class="text-[10px] text-slate-500 font-bold mt-1">입니다</p>
                 </div>
 
-                <!-- Info Grid -->
-                <div class="grid grid-cols-2 gap-4">
-                    <div
-                        class="bg-white border border-slate-100 rounded-[2rem] p-5 shadow-premium group hover:border-[#00A97A]/30 transition-soft">
-                        <div
-                            class="w-10 h-10 bg-slate-50 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-[#00A97A]/5 transition-soft">
-                            <i data-lucide="clock"
-                                class="w-5 h-5 text-slate-400 group-hover:text-[#00A97A] transition-soft"></i>
-                        </div>
-                        <span
-                            class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Departure</span>
-                        <span id="res-time" class="text-sm font-black text-slate-900">09:00</span>
+                <!-- Activity Header Bar (Purple) -->
+                <div class="bg-[#9E2AB5] text-white py-2.5 px-6 rounded-xl text-center shadow-md mx-3">
+                    <span class="text-[11px] font-black tracking-widest">선택 Activity 안내</span>
+                </div>
+
+                <!-- Info Grid: 출발 & 담당 (2 Column) -->
+                <div class="grid grid-cols-2 gap-3 mx-3">
+                    <div class="bg-[#F1F8F5] border border-[#E1EFEC] rounded-xl p-4 flex flex-col items-center">
+                        <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">출발</span>
+                        <span id="res-time" class="text-base font-black text-slate-900">09:00</span>
                     </div>
-                    <div
-                        class="bg-white border border-slate-100 rounded-[2rem] p-5 shadow-premium group hover:border-[#00A97A]/30 transition-soft">
-                        <div
-                            class="w-10 h-10 bg-slate-50 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-[#00A97A]/5 transition-soft">
-                            <i data-lucide="map-pin"
-                                class="w-5 h-5 text-slate-400 group-hover:text-[#00A97A] transition-soft"></i>
-                        </div>
-                        <span class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Meeting
-                            Point</span>
-                        <span id="res-location" class="text-xs font-bold text-slate-900 truncate block">Lobby</span>
+                    <div class="bg-[#F1F8F5] border border-[#E1EFEC] rounded-xl p-4 flex flex-col items-center">
+                        <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">담당</span>
+                        <span id="res-guide" class="text-base font-black text-slate-900">-</span>
                     </div>
                 </div>
 
-                <!-- Guide Bar -->
-                <div
-                    class="flex items-center gap-6 bg-slate-900 rounded-[2rem] p-5 shadow-2xl relative overflow-hidden group">
-                    <div
-                        class="absolute inset-0 bg-gradient-to-r from-[#00A97A]/10 to-transparent opacity-0 group-hover:opacity-100 transition-soft">
+                <!-- Summary & Duration (Rows) -->
+                <div class="mx-3 space-y-0.5 border-t border-b border-slate-100 py-2">
+                    <div class="flex items-center text-[10px]">
+                        <span class="w-20 font-black text-slate-400 uppercase tracking-tight">Course 요약</span>
+                        <span id="res-course-summary" class="flex-1 font-bold text-slate-700">-</span>
                     </div>
-                    <div
-                        class="w-12 h-12 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/10">
-                        <i data-lucide="user-check" class="w-6 h-6 text-[#00A97A]"></i>
-                    </div>
-                    <div class="flex-1">
-                        <span
-                            class="block text-[9px] font-black text-white/40 uppercase tracking-[0.2em] mb-0.5">Assigned
-                            Guide</span>
-                        <span id="res-guide" class="text-sm font-bold text-white">-</span>
+                    <div class="flex items-center text-[10px]">
+                        <span class="w-20 font-black text-slate-400 uppercase tracking-tight">Duration</span>
+                        <span id="res-duration" class="flex-1 font-bold text-slate-700">-</span>
                     </div>
                 </div>
 
-                <!-- Timeline -->
-                <div class="space-y-6">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <div class="w-1.5 h-4 bg-[#00A97A] rounded-full"></div>
-                            <h4
-                                class="text-xs font-heading font-black text-slate-900 uppercase tracking-widest leading-none">
-                                Schedule Summary</h4>
-                        </div>
-                        <div
-                            class="px-2.5 py-1 bg-[#00A97A]/5 rounded-full border border-[#00A97A]/10 flex items-center justify-center">
-                            <span
-                                class="text-[8px] font-black text-[#00A97A] uppercase tracking-widest leading-none">Real-time</span>
-                        </div>
-                    </div>
-                    <div id="timeline-container" class="space-y-0 relative"></div>
+                <!-- Timeline / Schedule Table -->
+                <div class="mx-2 overflow-hidden border border-slate-100 rounded-2xl">
+                    <table class="w-full text-left border-collapse bg-white">
+                        <thead class="bg-slate-50 border-b border-slate-100">
+                            <tr>
+                                <th
+                                    class="px-4 py-2 text-[8px] font-black text-slate-400 uppercase tracking-widest w-20">
+                                    Time</th>
+                                <th class="px-4 py-2 text-[8px] font-black text-slate-400 uppercase tracking-widest">내용
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="timeline-container" class="divide-y divide-slate-50">
+                            <!-- Rows injected by JavaScript -->
+                        </tbody>
+                    </table>
                 </div>
 
-                <!-- Notice Box -->
-                <div id="notice-box" class="hidden">
-                    <div
-                        class="bg-amber-50/50 backdrop-blur-sm rounded-[2.5rem] p-8 border border-amber-100/50 relative overflow-hidden">
-                        <div class="absolute -right-10 -top-10 w-32 h-32 bg-amber-100/20 rounded-full blur-3xl">
+                <!-- Notice / Remark Box -->
+                <div id="notice-box" class="hidden mx-2">
+                    <div class="bg-purple-50/50 rounded-2xl p-4 border border-purple-100">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="text-[9px] font-black text-purple-400 uppercase tracking-widest">Remark</span>
                         </div>
-                        <div class="flex items-center gap-3 mb-4 text-amber-700">
-                            <div class="w-8 h-8 bg-amber-100 rounded-xl flex items-center justify-center">
-                                <i data-lucide="alert-circle" class="w-4 h-4"></i>
+                        <div class="space-y-1.5">
+                            <div id="notice-supplies" class="text-[10px] text-purple-900/70 font-bold leading-relaxed">
+                                <span></span>
                             </div>
-                            <span class="text-[10px] font-black uppercase tracking-[0.2em]">Required
-                                Information</span>
-                        </div>
-                        <div class="space-y-4">
-                            <div id="notice-supplies" class="flex items-start gap-3">
-                                <div class="mt-1.5 w-1 h-1 bg-amber-400 rounded-full flex-none"></div>
-                                <p class="text-xs text-amber-900/70 font-semibold leading-relaxed"><span></span></p>
-                            </div>
-                            <div id="notice-warning" class="flex items-start gap-3">
-                                <div class="mt-1.5 w-1 h-1 bg-amber-400 rounded-full flex-none"></div>
-                                <p class="text-xs text-amber-900/70 font-semibold leading-relaxed"><span></span></p>
+                            <div id="notice-warning" class="text-[10px] text-purple-900/70 font-bold leading-relaxed">
+                                <span></span>
                             </div>
                         </div>
                     </div>
@@ -347,7 +326,7 @@
 
                 <!-- Reset & Logo -->
                 <div class="pb-10 flex flex-col items-center gap-8">
-                    <button onclick="resetApp()"
+                    <button id="reset-btn"
                         class="group inline-flex items-center gap-3 px-8 py-4 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] shadow-xl hover:-translate-y-1 transition-soft active:translate-y-0">
                         <i data-lucide="arrow-left" class="w-4 h-4 group-hover:-translate-x-1 transition-transform"></i>
                         <span>New Search</span>
@@ -385,7 +364,6 @@
     </div>
     </div>
 
-    <!-- FOOTER -->
     <div class="py-12 px-10 text-center mt-auto">
         <div class="flex flex-col items-center gap-4">
             <div class="flex items-center justify-center gap-3 opacity-30 transition-soft hover:opacity-100">
@@ -398,8 +376,11 @@
                     <span class="text-[8px] font-black text-slate-900 uppercase tracking-widest">Activity Portal</span>
                 </div>
             </div>
-            <p class="text-[8px] text-slate-300 font-bold uppercase tracking-widest">© 2026 B. Braun Management
-                Korea</p>
+            <p class="text-[8px] text-slate-300 font-bold uppercase tracking-widest">© 2026 B. Braun Management Korea
+            </p>
+            <div id="debug-console"
+                class="hidden text-[8px] text-slate-400 mt-4 p-2 bg-slate-50 rounded whitespace-pre-wrap text-left max-h-32 overflow-y-auto">
+            </div>
         </div>
     </div>
     </div>

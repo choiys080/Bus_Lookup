@@ -10,13 +10,17 @@ body::before {
     top: 0;
     left: 0;
     width: 100%;
-    height: 100vh;
-    background: url('bg.png') no-repeat top center;
-    background-size: cover;
+    height: 100%;
+    /* Professional Clean Gradient for Mobile (Memory Safe) */
+    background: linear-gradient(135deg, #F8FAFC 0%, #EFF6FF 100%);
     z-index: -1;
-    /* Optimized for mobile: prevent repaint on scroll */
-    will-change: transform;
+    opacity: 0;
+    /* JS will fade this in */
+    image-rendering: -webkit-optimize-contrast;
+    will-change: opacity;
 }
+
+/* Background image will be injected via JS only for Desktop to save mobile memory */
 
 /* Internal Page Clean Layout (Requested: "Clean Layout with background removal") */
 body.internal-clean {

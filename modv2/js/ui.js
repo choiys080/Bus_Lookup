@@ -9,23 +9,37 @@ export function showView(id) {
     if (target) target.classList.remove('hidden');
 
     // Design Requirement: "Result/Ticket View" should be clean white background without the image
+    const app = document.getElementById('app');
+    const header = app ? app.querySelector('div.px-8.py-7') || app.children[0] : null;
+    const contentArea = document.getElementById('content-area');
+
     if (id === 'result-view') {
         document.body.classList.add('internal-clean');
-        // Ensure the app container doesn't double-up the background or shadow in clean mode if needed
-        const app = document.getElementById('app');
         if (app) {
             app.classList.remove('shadow-premium', 'border', 'border-slate-200/60');
             app.classList.add('bg-transparent', 'shadow-none', 'border-0');
         }
+        if (header) {
+            header.classList.remove('py-7');
+            header.classList.add('py-2');
+        }
+        if (contentArea) {
+            contentArea.classList.remove('p-8');
+            contentArea.classList.add('px-8', 'pb-8', 'pt-2');
+        }
     } else {
         document.body.classList.remove('internal-clean');
-        // Revert app container styles for Landing/Input view
-        // BUT KEEP IT TRANSPARENT as per latest request
-        const app = document.getElementById('app');
         if (app) {
-            // No background/blur added back here!
             app.classList.remove('bg-white/80', 'backdrop-blur-md', 'shadow-premium', 'border', 'border-slate-200/60');
             app.classList.add('bg-transparent', 'shadow-none', 'border-0');
+        }
+        if (header) {
+            header.classList.add('py-7');
+            header.classList.remove('py-2');
+        }
+        if (contentArea) {
+            contentArea.classList.add('p-8');
+            contentArea.classList.remove('px-8', 'pb-8', 'pt-2');
         }
     }
 
@@ -52,36 +66,106 @@ export function showConnectionError(msg) {
     showView('error-view');
 }
 
+// Helper to extract course details not present in CSV
+function getActivityDetails(activityName) {
+    const details = {
+        summary: '-',
+        duration: '-'
+    };
+
+    if (!activityName) return details;
+
+    // Extract content within parentheses for summary if possible
+    const match = activityName.match(/\(([^)]+)\)/);
+    if (match) {
+        details.summary = match[1];
+    } else if (activityName.includes(':')) {
+        details.summary = activityName.split(':')[1].trim();
+    }
+
+    // Assign durations based on common keywords
+    if (activityName.includes('한라산')) {
+        details.duration = '약 6시간';
+    } else if (activityName.includes('올레시장') || activityName.includes('본태박물관')) {
+        details.duration = '약 3시간';
+    } else if (activityName.includes('갤러리') || activityName.includes('숲길')) {
+        details.duration = '약 3.5시간';
+    } else if (activityName.includes('요트')) {
+        details.duration = '약 2시간';
+    } else {
+        details.duration = '평균 3~4시간';
+    }
+
+    return details;
+}
+
 export function renderResult(user, inputName) {
     const nameEl = document.getElementById('res-name');
     const deptEl = document.getElementById('res-dept');
     const activityEl = document.getElementById('res-activity-detail');
+    const summaryEl = document.getElementById('res-course-summary');
     const timeEl = document.getElementById('res-time');
-    const locEl = document.getElementById('res-location');
+    const durationEl = document.getElementById('res-duration');
     const guideEl = document.getElementById('res-guide');
 
-    if (nameEl) nameEl.textContent = user.name || user.이름 || inputName;
+    const name = user.name || user.이름 || inputName || 'User';
+    if (nameEl) nameEl.textContent = name;
     if (deptEl) deptEl.textContent = user.department || user.부서 || '';
-    if (activityEl) activityEl.textContent = user.activity_name || user.액티비티 || user.bus || '-';
-    if (timeEl) timeEl.textContent = user.start_time || user.출발시간 || '-';
-    if (locEl) locEl.textContent = user.meeting_point || user.집합장소 || '-';
-    if (guideEl) guideEl.textContent = user.guide_info || user['가이드 정보'] || '-';
+
+    // Robust access for activity name (CSV has "액티비티 ")
+    const activityName = user.activity_name || user['액티비티 '] || user.액티비티 || user.bus || '';
+    const courseDetails = getActivityDetails(activityName);
+
+    if (activityEl) activityEl.textContent = activityName || '-';
+
+    // Summary and Duration derived or from user object if it exists
+    const finalSummary = user.course_summary || user.요약 || user['요약 '] || courseDetails.summary;
+    if (summaryEl) {
+        summaryEl.textContent = (finalSummary && finalSummary !== '-') ? finalSummary : courseDetails.summary;
+    }
+
+    // Time access (CSV has "출발시간")
+    if (timeEl) timeEl.textContent = user.start_time || user.출발시간 || user['출발시간 '] || '-';
+
+    // Duration access
+    const finalDuration = user.duration || user.소요시간 || user['소요시간 '] || courseDetails.duration;
+    if (durationEl) {
+        durationEl.textContent = (finalDuration && finalDuration !== '-') ? finalDuration : courseDetails.duration;
+    }
+
+    // Guide Info (CSV has "가이드 정보")
+    if (guideEl) guideEl.textContent = user.guide_info || user['가이드 정보'] || user['가이드 정보 '] || '-';
 
     const timelineContainer = document.getElementById('timeline-container');
     if (timelineContainer) {
-        const schedules = [user.schedule_1 || user['일정 1'], user.schedule_2 || user['일정 2'], user.schedule_3 || user['일정 3']].filter(s => s && s.trim());
-        if (schedules.length > 0) {
-            timelineContainer.innerHTML = schedules.map((s, idx) => `
-                <div class="flex gap-4 items-start relative group">
-                    <div class="flex flex-col items-center flex-none">
-                        <div class="w-2.5 h-2.5 rounded-full ${idx === 0 ? 'bg-[#00A97A]' : 'bg-slate-200'} z-10 shadow-sm border-2 border-white transition-soft group-hover:scale-125"></div>
-                        ${idx !== schedules.length - 1 ? '<div class="w-px h-12 bg-slate-100 -mt-0.5"></div>' : ''}
-                    </div>
-                    <div class="pb-8"><p class="text-[11px] font-bold text-slate-800 leading-relaxed transition-soft group-hover:text-slate-900">${s}</p></div>
-                </div>
-            `).join('');
+        const rawSchedule = [
+            user.schedule_1 || user['일정 1'] || user['일정1'],
+            user.schedule_2 || user['일정 2'] || user['일정2'],
+            user.schedule_3 || user['일정 3']
+        ].filter(s => s && s.trim());
+
+        if (rawSchedule.length > 0) {
+            timelineContainer.innerHTML = rawSchedule.map(s => {
+                // Determine if the schedule string contains a "Time - Description" pattern
+                let time = '-';
+                let content = s;
+
+                // Flexible regex to catch "HH:MM", "HH:MM ~ HH:MM", etc.
+                const timeMatch = s.match(/^(\d{2}:\d{2}\s*(?:[~-]\s*\d{2}:\d{2})?)\s*(.*)/);
+                if (timeMatch) {
+                    time = timeMatch[1].trim();
+                    content = timeMatch[2].trim();
+                }
+
+                return `
+                    <tr class="hover:bg-slate-50/50 transition-soft">
+                        <td class="px-4 py-3 text-[10px] font-black text-slate-400 tabular-nums">${time}</td>
+                        <td class="px-4 py-3 text-[10px] font-bold text-slate-700 leading-relaxed">${content}</td>
+                    </tr>
+                `;
+            }).join('');
         } else {
-            timelineContainer.innerHTML = '<p class="text-slate-400 text-xs">No schedule available</p>';
+            timelineContainer.innerHTML = '<tr><td colspan="2" class="px-4 py-8 text-center text-slate-300 text-[10px] font-bold uppercase tracking-widest">No schedule available</td></tr>';
         }
     }
 
@@ -94,11 +178,11 @@ export function renderResult(user, inputName) {
             const sEl = noticeBox.querySelector('#notice-supplies');
             const wEl = noticeBox.querySelector('#notice-warning');
             if (sEl) {
-                sEl.style.display = supplies ? 'flex' : 'none';
-                sEl.querySelector('span').textContent = supplies || '';
+                sEl.style.display = supplies ? 'block' : 'none';
+                sEl.querySelector('span').textContent = (supplies || '').replace(/^Remark\s*[:]\s*/i, '');
             }
             if (wEl) {
-                wEl.style.display = notice ? 'flex' : 'none';
+                wEl.style.display = notice ? 'block' : 'none';
                 wEl.querySelector('span').textContent = notice || '';
             }
         } else {
