@@ -1,7 +1,7 @@
 import { getStats, sanitizePhoneNumber } from './utils.js';
 
 export function showView(id) {
-    ['loading-view', 'admin-view', 'input-view', 'result-view', 'error-view'].forEach(v => {
+    ['loading-view', 'admin-view', 'input-view', 'result-view', 'error-view', 'setup-view', 'help-view'].forEach(v => {
         const el = document.getElementById(v);
         if (el) el.classList.add('hidden');
     });
@@ -13,12 +13,9 @@ export function showView(id) {
     const header = app ? app.querySelector('div.px-8.py-7') || app.children[0] : null;
     const contentArea = document.getElementById('content-area');
 
-    if (id === 'result-view') {
+    if (id === 'result-view' || id === 'admin-view') {
         document.body.classList.add('internal-clean');
-        if (app) {
-            app.classList.remove('shadow-premium', 'border', 'border-slate-200/60');
-            app.classList.add('bg-transparent', 'shadow-none', 'border-0');
-        }
+
         if (header) {
             header.classList.remove('py-7');
             header.classList.add('py-2');
@@ -30,9 +27,9 @@ export function showView(id) {
     } else {
         document.body.classList.remove('internal-clean');
         if (app) {
-            app.classList.remove('bg-white/80', 'backdrop-blur-md', 'shadow-premium', 'border', 'border-slate-200/60');
-            app.classList.add('bg-transparent', 'shadow-none', 'border-0');
+            app.style.removeProperty('background');
         }
+
         if (header) {
             header.classList.add('py-7');
             header.classList.remove('py-2');
@@ -99,7 +96,7 @@ function getActivityDetails(activityName) {
     return details;
 }
 
-export function renderResult(user, inputName) {
+export function renderResult(user, inputName, activityTitle, timeHeader, guideHeader, meetingHeader, summaryHeader, durationHeader, timelineTimeHeader, suppliesHeader, noticeHeader) {
     const nameEl = document.getElementById('res-name');
     const deptEl = document.getElementById('res-dept');
     const activityEl = document.getElementById('res-activity-detail');
@@ -107,10 +104,29 @@ export function renderResult(user, inputName) {
     const timeEl = document.getElementById('res-time');
     const durationEl = document.getElementById('res-duration');
     const guideEl = document.getElementById('res-guide');
+    const placeEl = document.getElementById('res-place');
+    const titleEl = document.getElementById('res-activity-title');
+    const timeHeaderEl = document.getElementById('res-time-header');
+    const guideHeaderEl = document.getElementById('res-guide-header');
+    const placeHeaderEl = document.getElementById('res-place-header');
+    const summaryHeaderEl = document.getElementById('res-summary-header');
+    const durationHeaderEl = document.getElementById('res-duration-header');
+    const timelineTimeHeaderEl = document.getElementById('res-timeline-time-header');
+    const suppliesHeaderEl = document.getElementById('res-supplies-header');
+    const noticeHeaderEl = document.getElementById('res-notice-header');
 
     const name = user.name || user.이름 || inputName || 'User';
     if (nameEl) nameEl.textContent = name;
     if (deptEl) deptEl.textContent = user.department || user.부서 || '';
+    if (titleEl && activityTitle) titleEl.textContent = activityTitle;
+    if (timeHeaderEl && timeHeader) timeHeaderEl.textContent = timeHeader;
+    if (guideHeaderEl && guideHeader) guideHeaderEl.textContent = guideHeader.trim();
+    if (placeHeaderEl && meetingHeader) placeHeaderEl.textContent = meetingHeader.trim();
+    if (summaryHeaderEl && summaryHeader) summaryHeaderEl.textContent = summaryHeader.trim();
+    if (durationHeaderEl && durationHeader) durationHeaderEl.textContent = durationHeader.trim();
+    if (timelineTimeHeaderEl && timelineTimeHeader) timelineTimeHeaderEl.textContent = timelineTimeHeader.trim();
+    if (suppliesHeaderEl && suppliesHeader) suppliesHeaderEl.textContent = suppliesHeader.trim();
+    if (noticeHeaderEl && noticeHeader) noticeHeaderEl.textContent = noticeHeader.trim();
 
     // Robust access for activity name (CSV has "액티비티 ")
     const activityName = user.activity_name || user['액티비티 '] || user.액티비티 || user.bus || '';
@@ -127,6 +143,8 @@ export function renderResult(user, inputName) {
     // Time access (CSV has "출발시간")
     if (timeEl) timeEl.textContent = user.start_time || user.출발시간 || user['출발시간 '] || '-';
 
+    if (placeEl) placeEl.textContent = user.meeting_point || user.집합장소 || '-';
+
     // Duration access
     const finalDuration = user.duration || user.소요시간 || user['소요시간 '] || courseDetails.duration;
     if (durationEl) {
@@ -136,38 +154,41 @@ export function renderResult(user, inputName) {
     // Guide Info (CSV has "가이드 정보")
     if (guideEl) guideEl.textContent = user.guide_info || user['가이드 정보'] || user['가이드 정보 '] || '-';
 
+    // Timeline Row Generation
     const timelineContainer = document.getElementById('timeline-container');
     if (timelineContainer) {
-        const rawSchedule = [
-            user.schedule_1 || user['일정 1'] || user['일정1'],
-            user.schedule_2 || user['일정 2'] || user['일정2'],
-            user.schedule_3 || user['일정 3']
-        ].filter(s => s && s.trim());
+        const scheduleData = [
+            { time: user.time_1, content: user.schedule_1 },
+            { time: user.time_2, content: user.schedule_2 },
+            { time: user.time_3, content: user.schedule_3 }
+        ].filter(item => item.content && item.content.trim());
 
-        if (rawSchedule.length > 0) {
-            timelineContainer.innerHTML = rawSchedule.map(s => {
-                // Determine if the schedule string contains a "Time - Description" pattern
-                let time = '-';
-                let content = s;
+        if (scheduleData.length > 0) {
+            timelineContainer.innerHTML = scheduleData.map(item => {
+                let time = item.time || '-';
+                let content = item.content;
 
-                // Flexible regex to catch "HH:MM", "HH:MM ~ HH:MM", etc.
-                const timeMatch = s.match(/^(\d{2}:\d{2}\s*(?:[~-]\s*\d{2}:\d{2})?)\s*(.*)/);
-                if (timeMatch) {
-                    time = timeMatch[1].trim();
-                    content = timeMatch[2].trim();
+                // Fallback to regex if time is missing and content contains a time pattern
+                if (time === '-' || !time) {
+                    const timeMatch = content.match(/^(\d{2}:\d{2}\s*(?:[~-]\s*\d{2}:\d{2})?)\s*(.*)/);
+                    if (timeMatch) {
+                        time = timeMatch[1].trim();
+                        content = timeMatch[2].trim();
+                    }
                 }
 
                 return `
                     <tr class="hover:bg-slate-50/50 transition-soft">
-                        <td class="px-4 py-3 text-[10px] font-black text-slate-400 tabular-nums">${time}</td>
-                        <td class="px-4 py-3 text-[10px] font-bold text-slate-700 leading-relaxed">${content}</td>
+                        <td class="px-4 py-3 text-[13px] font-black text-slate-400 tabular-nums">${time}</td>
+                        <td class="px-4 py-3 text-[13px] font-bold text-slate-700 leading-relaxed">${content}</td>
                     </tr>
                 `;
             }).join('');
         } else {
-            timelineContainer.innerHTML = '<tr><td colspan="2" class="px-4 py-8 text-center text-slate-300 text-[10px] font-bold uppercase tracking-widest">No schedule available</td></tr>';
+            timelineContainer.innerHTML = '<tr><td colspan="2" class="px-4 py-8 text-center text-slate-300 text-[12px] font-bold uppercase tracking-widest">No schedule available</td></tr>';
         }
     }
+
 
     const supplies = user.supplies || user.준비물;
     const notice = user.notice || user.주의사항;
@@ -177,13 +198,18 @@ export function renderResult(user, inputName) {
             noticeBox.classList.remove('hidden');
             const sEl = noticeBox.querySelector('#notice-supplies');
             const wEl = noticeBox.querySelector('#notice-warning');
+            const sCont = document.getElementById('notice-supplies-container');
+            const wCont = document.getElementById('notice-warning-container');
+
             if (sEl) {
-                sEl.style.display = supplies ? 'block' : 'none';
-                sEl.querySelector('span').textContent = (supplies || '').replace(/^Remark\s*[:]\s*/i, '');
+                const cleanSupplies = (supplies || '').replace(/^Remark\s*[:]\s*/i, '').trim();
+                sEl.querySelector('span').textContent = cleanSupplies;
+                if (sCont) sCont.style.display = cleanSupplies ? 'block' : 'none';
             }
             if (wEl) {
-                wEl.style.display = notice ? 'block' : 'none';
-                wEl.querySelector('span').textContent = notice || '';
+                const cleanNotice = (notice || '').trim();
+                wEl.querySelector('span').textContent = cleanNotice;
+                if (wCont) wCont.style.display = cleanNotice ? 'block' : 'none';
             }
         } else {
             noticeBox.classList.add('hidden');

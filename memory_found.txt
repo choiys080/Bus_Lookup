@@ -1,0 +1,2 @@
+C:\Users\choiys\.gemini\antigravity\code_tracker\active\no_repo\f57b2ffe4c5fd8bafaaec7fc2d9c771b_memory.json
+C:\Users\choiys\AppData\Roaming\npm\node_modules\@michaellatman\mcp-get\packages\modelcontextprotocol--server-memory.json

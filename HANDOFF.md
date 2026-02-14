@@ -1,39 +1,70 @@
-# Project Handoff Guide: Bus Lookup & Activity Portal
+# Handoff Guide: Activity Check-In Portal
 
-This guide provides the next AI agent with everything needed to maintain and iterate on the B. Braun Bus Lookup application.
+This guide provides instructions for setting up and deploying the Activity Check-In Portal.
 
-## 📁 Project Structure (Sources in `/modv2`)
+## 1. Prerequisites
 
-- **`modv2/index.html`**: Main UI structure. Uses Tailwind CDN and Lucide icons.
-- **`modv2/app.js`**: Core logic (Firebase Auth, Firestore, Background Image Loading).
-- **`modv2/styles.css`**: Design tokens and custom glassmorphism styles.
-- **`modv2/bg_optimized.jpg`**: **CRITICAL** - Memory-safe background image (2000px).
-- **`wrangler.toml`**: Cloudflare Pages configuration.
-- **`optimize_bg.py`**: Python script used for image optimization (backup reference).
+- **Node.js**: Required to run the local development server.
+- **Firebase Account**: Required for data storage and authentication.
 
-## 📝 Change Log (Optimization Phase)
+## 2. Firebase Setup
 
-1. **Memory Optimization**: Fixed OOM crashes on mobile by resizing the background from 132MP to 2MP.
-2. **Code Syntax Fix**: Resolved nested function declaration in `initAuth` within `app.js`.
-3. **Visual Restoration**: Re-enabled `backdrop-filter: blur(12px)` and restored decorative elements previously hidden during memory crisis.
-4. **Scrolling Update**: Enabled vertical scrolling while keeping the background image `fixed`.
-5. **Deployment Pivot**: Moved from credit-exhausted Netlify to **Cloudflare Pages**.
+The application uses Firebase Firestore for data storage and Firebase Auth for admin access.
 
-## 🚀 Deployment Workflow
+### Step-by-Step Configuration
 
-**Command**: `npx wrangler pages deploy modv2 --project-name bbraun-itinerary-v2 --branch main`
+1. **Create a Firebase Project**: Go to the [Firebase Console](https://console.firebase.google.com/) and create a new project.
+2. **Enable Firestore**:
+    - Select "Firestore Database" in the left menu.
+    - Click "Create database" and choose "Production mode".
+3. **Enable Authentication**:
+    - Select "Authentication" -> "Get Started".
+    - Enable the "Email/Password" provider.
+    - Add an admin user (e.g., `admin@yourcompany.com`).
+4. **Get SDK Keys**:
+    - Go to "Project settings" (gear icon).
+    - Under "Your apps", add a new "Web app".
+    - Copy the `firebaseConfig` code block from the "SDK setup and configuration" section.
 
-- **Environment**: Production.
-- **Live URL**: [https://bbraun-itinerary-v2.pages.dev](https://bbraun-itinerary-v2.pages.dev)
-- **Preview URL**: Accessible via `npx wrangler pages deployment list`.
+## 3. Launch & Configuration (GUI)
 
-## ⚠️ Critical Constraints
+1. **Start the Server**:
 
-- **Memory Safety**: Do NOT use images exceeding 2500px on the longest side. Mobile memory limits are strict.
-- **CSS Hierarchy**: Use `!important` sparingly but note that some global styles (like `body::before`) use it to override Tailwind defaults for the glassmorphism effect.
-- **Firebase**: The app relies on `signInAnonymously()` for data fetch. Ensure Firebase config in `index.html` remains intact.
+    ```bash
+    npm run dev
+    ```
 
-## 🛠️ Troubleshooting for the Next Agent
+2. **Open in Browser**: Navigate to `http://localhost:3000`.
+3. **Setup Wizard**: You will be automatically greeted by the "System Setup" screen.
+4. **Paste Configuration**:
+    - Paste the Firebase code block you copied into the "Firebase SDK Snippet" box.
+    - Type a name for your event in the "Event Identifier" box (e.g., `event-2026`).
+5. **Save**: Click "Initialize System". The app will reload and be ready to use!
 
-- If the background doesn't show: Check `app.js` background loading logic and ensure `bg_optimized.jpg` exists in the deployed folder.
-- If scrolling breaks: Verify `index.html` for `overflow-hidden` classes on the `#app` or `body`.
+## 4. Running the Application
+
+From the project root directory, run:
+
+```bash
+npm install
+npm run dev
+```
+
+The application will be available at `http://localhost:3000`.
+
+## 5. Admin Dashboard & Data Import
+
+1. Access the Admin Dashboard by clicking the settings icon on the landing page.
+2. Login with your Firebase credentials.
+3. Use the "Upload New Participants" button to import your `participants_data.csv`.
+4. The system will automatically sync the data to your Firestore instance.
+
+## 6. Backup System
+
+The project includes a PowerShell-based backup system.
+
+- `npm run backup`: Create a manual snapshot of current files.
+- `npm run backup:watch`: Automatically create backups whenever files are saved.
+
+---
+*Developed for B. Braun Korea Activity Portal*

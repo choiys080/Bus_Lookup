@@ -1,0 +1,4 @@
+C:\Users\choiys\.codeium\windsurf\memories\memory.json
+C:\Users\choiys\.gemini\antigravity\code_tracker\active\Bus_Lookup_7b657666e32da6b325b8e71ba79626f6e07f0ce1\df793355b40940803a11742a227caa5a_MEMORY_BACKUP.json
+C:\Users\choiys\.gemini\antigravity\code_tracker\active\no_repo\f57b2ffe4c5fd8bafaaec7fc2d9c771b_memory.json
+D:\Antigravity\Bus_Lookup\MEMORY_BACKUP.json

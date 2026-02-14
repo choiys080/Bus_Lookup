@@ -4,7 +4,10 @@
   "description": "A cloud-synced self-service portal for event participants to find their bus assignments.",
   "main": "update_hong.js",
   "scripts": {
-    "dev": "http-server . -p 3000 -c-1",
+    "dev": "http-server ./modv2 -p 3000 -c-1",
+    "backup": "powershell -ExecutionPolicy Bypass -File scripts/backup.ps1",
+    "backup:watch": "powershell -ExecutionPolicy Bypass -File scripts/auto_backup_monitor.ps1",
+    "backup:clean": "powershell -Command \"Remove-Item -Path backups/*.zip -Force\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

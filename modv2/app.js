@@ -1,13 +1,47 @@
-// Version: 1.1.1 - Background Optimization & Logic Fix
-import { auth, db, appId } from './js/config.js';
+import { auth, db, appId, isConfigured } from './js/config.js';
 import { signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 import { collection, addDoc, setDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-import { fetchParticipants, listenToCheckins, batchUploadParticipants, batchDeleteAll, checkParticipantStatus } from './js/services.js';
+import { fetchParticipants, listenToCheckins, batchUploadParticipants, batchDeleteAll, checkParticipantStatus, fetchMetadata, updateMetadata } from './js/services.js';
 import { sanitizePhoneNumber, parseCSVLine, getSafeHeader } from './js/utils.js';
 import * as ui from './js/ui.js';
+import { initSetup } from './js/setup.js';
+
+// EXPOSE TO GLOBALS for index.html onclicks
+window.ui = ui;
+window.initSetup = initSetup;
+window.isConfigured = isConfigured;
+window.showView = ui.showView;
+window.openDevModal = () => {
+    const modal = document.getElementById('dev-modal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        // Re-initialize icons just in case
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+};
+window.closeDevModal = () => {
+    const modal = document.getElementById('dev-modal');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+};
+
+// AUTH & ADMIN (Forward declarations for onclicks)
+window.submitPassword = () => { console.error("Admin not ready"); };
+window.cancelPassword = () => { };
+window.toggleAdmin = () => { };
+window.switchAdminTab = () => { };
+window.toggleStats = () => { };
+window.filterAdminList = () => { };
+window.sortAttendance = () => { };
+window.clearCheckins = () => { };
+window.exportFullReport = () => { };
 
 // STATE
 let PARTICIPANTS = [];
+let METADATA = {};
 let currentCheckins = [];
 let currentSortMode = 'status';
 let currentUser = null;
@@ -26,6 +60,54 @@ const debugLog = (msg) => {
     }
 };
 window.debugLog = debugLog;
+
+// FETCH LOCAL CSV HEADER (D-1)
+const fetchLocalCSVHeader = async () => {
+    try {
+        const response = await fetch('./participants_data.csv');
+        if (!response.ok) return null;
+        const text = await response.text();
+        const firstLine = text.split('\n')[0];
+        if (firstLine) {
+            const headers = parseCSVLine(firstLine).map(h => h.trim().replace(/^\uFEFF/, ''));
+            // Column D is index 3
+            if (headers[3]) {
+                METADATA.activity_header = headers[3];
+                const resEl = document.getElementById('res-activity-title');
+                if (resEl) resEl.textContent = headers[3];
+            }
+            if (headers[4]) {
+                METADATA.time_header = headers[4];
+                const timeHeaderEl = document.getElementById('res-time-header');
+                if (timeHeaderEl) timeHeaderEl.textContent = headers[4];
+            }
+            if (headers[5]) {
+                METADATA.meeting_header = headers[5];
+                const placeHeaderEl = document.getElementById('res-place-header');
+                if (placeHeaderEl) placeHeaderEl.textContent = headers[5];
+            }
+            if (headers[6]) {
+                METADATA.guide_header = headers[6];
+                const guideHeaderEl = document.getElementById('res-guide-header');
+                if (guideHeaderEl) guideHeaderEl.textContent = headers[6];
+            }
+            if (headers[15]) {
+                METADATA.supplies_header = headers[15];
+                const el = document.getElementById('res-supplies-header');
+                if (el) el.textContent = headers[15];
+            }
+            if (headers[16]) {
+                METADATA.notice_header = headers[16];
+                const el = document.getElementById('res-notice-header');
+                if (el) el.textContent = headers[16];
+            }
+            return { activity: headers[3], time: headers[4], meeting: headers[5], guide: headers[6], supplies: headers[15], notice: headers[16] };
+        }
+    } catch (e) {
+        console.error("Failed to fetch local CSV header:", e);
+    }
+    return null;
+};
 
 // AUTH INIT
 const initAuth = async () => {
@@ -56,23 +138,62 @@ const initAuth = async () => {
     }
 };
 
-onAuthStateChanged(auth, async (user) => {
-    if (user) {
-        currentUser = user;
-        const loadingMsg = document.querySelector('#loading-view p.animate-pulse');
-        if (loadingMsg) loadingMsg.textContent = "Loading Participant Data...";
-        try {
-            PARTICIPANTS = await fetchParticipants();
-            window.PARTICIPANTS = PARTICIPANTS;
-            ui.showView('input-view');
-        } catch (err) {
-            ui.showConnectionError("데이터 연결 실패: " + err.message);
+if (auth) {
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            currentUser = user;
+            const loadingMsg = document.querySelector('#loading-view p.animate-pulse');
+            if (loadingMsg) loadingMsg.textContent = "Loading Participant Data...";
+            try {
+                PARTICIPANTS = await fetchParticipants();
+                window.PARTICIPANTS = PARTICIPANTS;
+                METADATA = await fetchMetadata() || {};
+
+                if (METADATA.activity_header) {
+                    const resEl = document.getElementById('res-activity-title');
+                    if (resEl) resEl.textContent = METADATA.activity_header;
+                }
+                if (METADATA.time_header) {
+                    const timeHeaderEl = document.getElementById('res-time-header');
+                    if (timeHeaderEl) timeHeaderEl.textContent = METADATA.time_header;
+                }
+                if (METADATA.guide_header) {
+                    const guideHeaderEl = document.getElementById('res-guide-header');
+                    if (guideHeaderEl) guideHeaderEl.textContent = METADATA.guide_header;
+                }
+                if (METADATA.meeting_header) {
+                    const el = document.getElementById('res-place-header');
+                    if (el) el.textContent = METADATA.meeting_header;
+                }
+                if (METADATA.summary_header) {
+                    const el = document.getElementById('res-summary-header');
+                    if (el) el.textContent = METADATA.summary_header;
+                }
+                if (METADATA.duration_header) {
+                    const el = document.getElementById('res-duration-header');
+                    if (el) el.textContent = METADATA.duration_header;
+                }
+                if (METADATA.timeline_time_header) {
+                    const el = document.getElementById('res-timeline-time-header');
+                    if (el) el.textContent = METADATA.timeline_time_header;
+                }
+                if (METADATA.supplies_header) {
+                    const el = document.getElementById('res-supplies-header');
+                    if (el) el.textContent = METADATA.supplies_header;
+                }
+                if (METADATA.notice_header) {
+                    const el = document.getElementById('res-notice-header');
+                    if (el) el.textContent = METADATA.notice_header;
+                }
+                ui.showView('input-view');
+            } catch (err) {
+                ui.showConnectionError("데이터 연결 실패: " + err.message);
+            }
         }
-    }
-});
+    });
+}
 
 // PUBLIC INTERFACE (Window exposed)
-window.showView = ui.showView;
 
 const handleLookup = () => {
     (async () => {
@@ -116,7 +237,17 @@ const handleLookup = () => {
             }
 
             if (user) {
-                ui.renderResult(user, '');
+                ui.renderResult(user, '',
+                    METADATA.activity_header,
+                    METADATA.time_header,
+                    METADATA.guide_header,
+                    METADATA.meeting_header,
+                    METADATA.summary_header,
+                    METADATA.duration_header,
+                    METADATA.timeline_time_header,
+                    METADATA.supplies_header,
+                    METADATA.notice_header
+                );
                 ui.showView('result-view');
 
                 // Logging check-in (deferred)
@@ -170,6 +301,7 @@ window.submitPassword = () => {
     if (password === 'admin123') {
         document.getElementById('password-modal')?.classList.add('hidden');
         document.getElementById('password-error')?.classList.add('hidden');
+
         ui.showView('admin-view');
         // Admin Mode: Now we need the full list
         if (!checkinsUnsubscribe) {
@@ -297,6 +429,18 @@ if (csvUpload) csvUpload.onchange = async (e) => {
             const idx = headers.findIndex(h => h === name.trim());
             return idx === -1 ? null : idx;
         };
+
+        // Extract Activity Headers (D=3, E=4, G=6)
+        const activityHeader = headers[3] || '선택 Activity 안내';
+        const timeHeader = headers[4] || '출발';
+        const meetingHeader = headers[5] || '장소';
+        const guideHeader = headers[6] || '담당';
+        const summaryHeader = headers[7] || 'Course 요약';
+        const durationHeader = headers[8] || 'Duration';
+        const timelineTimeHeader = headers[9] || 'Time';
+        const suppliesHeader = headers[15] || '준비물 (Supplies)';
+        const noticeHeader = headers[16] || '주의사항 (Notice)';
+
         const newData = [];
         for (let i = 1; i < lines.length; i++) {
             const line = lines[i].trim();
@@ -311,12 +455,16 @@ if (csvUpload) csvUpload.onchange = async (e) => {
                 start_time: cols[getIdx('출발시간')] || cols[4] || '',
                 meeting_point: cols[getIdx('집합장소')] || cols[5] || '',
                 guide_info: cols[getIdx('가이드 정보')] || cols[6] || '',
-                // Flexible matching for schedules
-                schedule_1: cols[getIdx('일정 1')] || cols[getIdx('일정1')] || cols[7] || '',
-                schedule_2: cols[getIdx('일정 2')] || cols[getIdx('일정2')] || cols[8] || '',
-                schedule_3: cols[getIdx('일정 3')] || cols[9] || '',
-                supplies: cols[getIdx('준비물')] || cols[10] || '',
-                notice: cols[getIdx('주의사항')] || cols[11] || ''
+                course_summary: cols[getIdx('코스 요약')] || cols[7] || '',
+                duration: cols[getIdx('듀레이션')] || cols[8] || '',
+                time_1: cols[getIdx('타임')] || cols[9] || '',
+                schedule_1: cols[getIdx('일정 1')] || cols[10] || '',
+                time_2: cols[getIdx('타임 2')] || cols[11] || '',
+                schedule_2: cols[getIdx('일정 2')] || cols[12] || '',
+                time_3: cols[getIdx('타임 3')] || cols[13] || '',
+                schedule_3: cols[getIdx('일정 3')] || cols[14] || '',
+                supplies: cols[getIdx('준비물')] || cols[15] || '',
+                notice: cols[getIdx('주의사항')] || cols[16] || ''
             };
             newData.push(p);
         }
@@ -327,6 +475,18 @@ if (csvUpload) csvUpload.onchange = async (e) => {
                 await batchUploadParticipants(newData, (pct) => {
                     if (msg) msg.innerHTML = `<span class="animate-pulse">Syncing: ${pct}%</span>`;
                 });
+                await updateMetadata({
+                    activity_header: activityHeader,
+                    time_header: timeHeader,
+                    meeting_header: meetingHeader,
+                    guide_header: guideHeader,
+                    summary_header: summaryHeader,
+                    duration_header: durationHeader,
+                    timeline_time_header: timelineTimeHeader,
+                    supplies_header: suppliesHeader,
+                    notice_header: noticeHeader
+                });
+                METADATA = await fetchMetadata() || {};
                 PARTICIPANTS = await fetchParticipants();
                 if (msg) msg.innerHTML = 'Sync Complete';
                 setTimeout(() => { if (msg) msg.innerHTML = ''; }, 4000);
@@ -368,7 +528,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 2. Initial Auth
-    initAuth();
+    if (auth) initAuth();
     if (window.lucide) window.lucide.createIcons();
 
     // 3. Background Loading (JS-Controlled for Memory Safety)
@@ -378,19 +538,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
         img.decode().then(() => {
             const style = document.createElement('style');
-            style.innerHTML = `body::before {
-                background: url('bg_optimized.jpg') no-repeat top center !important;
-                background-size: cover !important;
-                position: fixed !important;
-                opacity: 1 !important;
-                transition: opacity 1.5s ease-in-out !important;
-            }`;
+            style.innerHTML = `
+                #app::before {
+                    background-image: url('bg_optimized.jpg') !important;
+                }
+            `;
             document.head.appendChild(style);
-        }).catch((err) => {
-            console.error("Background decode failed", err);
-            const style = document.createElement('style');
-            style.innerHTML = `body::before { opacity: 1 !important; }`;
-            document.head.appendChild(style);
-        });
+            document.body.classList.add('bg-ready');
+            document.getElementById('app')?.classList.add('bg-ready');
+        })
+            .catch((err) => {
+                console.error("Background decode failed", err);
+                const style = document.createElement('style');
+                style.innerHTML = `body::before { opacity: 1 !important; }`;
+                document.head.appendChild(style);
+            });
     }, 1000);
 });
+
+// FINAL SETUP CHECK (After all exposures)
+if (!isConfigured) {
+    ui.showView('setup-view');
+    initSetup();
+    console.warn("System not configured. Redirecting to setup.");
+}

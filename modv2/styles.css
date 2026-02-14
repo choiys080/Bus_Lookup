@@ -4,6 +4,40 @@ body {
     margin: 0;
 }
 
+#app {
+    position: relative;
+    overflow: hidden;
+    /* Clips the interior sharp image */
+    background: transparent;
+    border: none;
+    /* High elevation 'popped up' shadow */
+    box-shadow:
+        0 50px 100px -20px rgba(0, 0, 0, 0.45),
+        0 30px 60px -30px rgba(0, 0, 0, 0.3);
+    z-index: 10;
+    border-radius: 2.5rem;
+}
+
+/* Sharp Image Inside: Displaying the bg png as requested */
+#app::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 1.5s ease-in-out;
+    background-size: cover;
+    background-position: top center;
+    background-repeat: no-repeat;
+    pointer-events: none;
+}
+
+
+/* Removed all interior image layers to keep the card clean white */
+
+
+/* Removed duplicate bg image layers from #app to satisfy "no bg png again" */
+
 body::before {
     content: "";
     position: fixed;
@@ -11,25 +45,34 @@ body::before {
     left: 0;
     width: 100%;
     height: 100%;
-    /* Professional Clean Gradient for Mobile (Memory Safe) */
-    background: linear-gradient(135deg, #F8FAFC 0%, #EFF6FF 100%);
     z-index: -1;
-    opacity: 0;
-    /* JS will fade this in */
-    image-rendering: -webkit-optimize-contrast;
-    will-change: opacity;
+    background: #FFFFFF;
+    pointer-events: none;
+}
+
+/* Triggered by JS */
+body.bg-ready::before,
+#app.bg-ready::before {
+    opacity: 1 !important;
 }
 
 /* Background image will be injected via JS only for Desktop to save mobile memory */
 
-/* Internal Page Clean Layout (Requested: "Clean Layout with background removal") */
-body.internal-clean {
+/* Result View Styling */
+body.internal-clean::before {
     background: #FFFFFF !important;
+    background-image: none !important;
 }
 
-body.internal-clean::before {
+body.internal-clean #app {
+    background: #FFFFFF !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05) !important;
+}
+
+body.internal-clean #app::before {
     display: none !important;
 }
+
 
 h1,
 h2,
@@ -130,4 +173,53 @@ h4,
     .no-scrollbar {
         scrollbar-width: none;
     }
+}
+
+/* Force Left Alignment for Inputs and Placeholders */
+input#phone-input,
+input#name-input {
+    text-align: left !important;
+}
+
+/* Individual selectors for placeholder stability */
+input#phone-input::-webkit-input-placeholder {
+    text-align: left !important;
+    opacity: 1;
+    padding-left: 0 !important;
+}
+
+input#name-input::-webkit-input-placeholder {
+    text-align: left !important;
+    opacity: 1;
+    padding-left: 0 !important;
+}
+
+input#phone-input::-moz-placeholder {
+    text-align: left !important;
+    opacity: 1;
+}
+
+input#name-input::-moz-placeholder {
+    text-align: left !important;
+    opacity: 1;
+}
+
+input#phone-input:-ms-input-placeholder {
+    text-align: left !important;
+    opacity: 1;
+}
+
+input#name-input:-ms-input-placeholder {
+    text-align: left !important;
+    opacity: 1;
+}
+
+input#phone-input::placeholder {
+    text-align: left !important;
+    opacity: 1;
+}
+
+input#name-input::placeholder {
+    text-align: left !important;
+    opacity: 1;
 }

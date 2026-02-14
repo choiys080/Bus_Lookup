@@ -1,5 +1,5 @@
 import { db, appId } from './config.js';
-import { collection, doc, getDocs, writeBatch, query, orderBy, onSnapshot, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { collection, doc, getDocs, getDoc, setDoc, writeBatch, query, orderBy, onSnapshot, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 import { chunkArray } from './utils.js';
 
 const BATCH_SIZE = 100;
@@ -8,6 +8,17 @@ export async function fetchParticipants() {
     const dataCol = collection(db, 'artifacts', appId, 'public', 'data', 'participants');
     const snapshot = await getDocs(dataCol);
     return snapshot.docs.map(d => d.data());
+}
+
+export async function fetchMetadata() {
+    const metaRef = doc(db, 'artifacts', appId, 'public', 'data', 'metadata', 'config');
+    const snap = await getDoc(metaRef);
+    return snap.exists() ? snap.data() : null;
+}
+
+export async function updateMetadata(data) {
+    const metaRef = doc(db, 'artifacts', appId, 'public', 'data', 'metadata', 'config');
+    await setDoc(metaRef, data, { merge: true });
 }
 
 export function listenToCheckins(callback) {
