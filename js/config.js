@@ -17,5 +17,4 @@ const firebaseConfig = typeof __firebase_config !== 'undefined'
 export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
-// Hardcoded to prevent data bleeding into the default bucket
-export const appId = 'b-braun-event-2026-production';
+export const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
