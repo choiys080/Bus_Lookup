@@ -1,0 +1,225 @@
+body {
+    font-family: 'Arial', sans-serif !important;
+    color: #000000;
+    margin: 0;
+}
+
+#app {
+    position: relative;
+    overflow: hidden;
+    /* Clips the interior sharp image */
+    background: transparent;
+    border: none;
+    /* High elevation 'popped up' shadow */
+    box-shadow:
+        0 50px 100px -20px rgba(0, 0, 0, 0.45),
+        0 30px 60px -30px rgba(0, 0, 0, 0.3);
+    z-index: 10;
+    border-radius: 2.5rem;
+}
+
+/* Sharp Image Inside: Displaying the bg png as requested */
+#app::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 1.5s ease-in-out;
+    background-size: cover;
+    background-position: top center;
+    background-repeat: no-repeat;
+    pointer-events: none;
+}
+
+
+/* Removed all interior image layers to keep the card clean white */
+
+
+/* Removed duplicate bg image layers from #app to satisfy "no bg png again" */
+
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    background: #FFFFFF;
+    pointer-events: none;
+}
+
+/* Triggered by JS */
+body.bg-ready::before,
+#app.bg-ready::before {
+    opacity: 1 !important;
+}
+
+/* Background image will be injected via JS only for Desktop to save mobile memory */
+
+/* Result View Styling */
+body.internal-clean::before {
+    background: #FFFFFF !important;
+    background-image: none !important;
+}
+
+body.internal-clean #app {
+    background: #FFFFFF !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05) !important;
+}
+
+body.internal-clean #app::before {
+    display: none !important;
+}
+
+
+h1,
+h2,
+h3,
+h4,
+.font-heading {
+    font-family: 'Arial', sans-serif !important;
+    font-weight: 900;
+}
+
+.slide-in {
+    animation: slideIn 0.4s ease-out forwards;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Timeline & Scrollbar */
+.timeline-item {
+    position: relative;
+    padding-left: 2rem;
+}
+
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: 0.45rem;
+    top: 1.5rem;
+    width: 2px;
+    height: calc(100% - 0.5rem);
+    background: #e2e8f0;
+}
+
+.timeline-item:last-child::before {
+    display: none;
+}
+
+.glass {
+    background: rgba(255, 255, 255, 0.95);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.shadow-premium {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04), 0 4px 6px -2px rgba(0, 0, 0, 0.02), 0 20px 25px -5px rgba(0, 0, 0, 0.03);
+}
+
+.text-black-bold {
+    color: #000000 !important;
+    font-weight: 700 !important;
+}
+
+.text-black-black {
+    color: #000000 !important;
+    font-weight: 900 !important;
+}
+
+.transition-soft {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+::-webkit-scrollbar {
+    width: 5px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #e2e8f0;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #cbd5e1;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.no-scrollbar {
+    -ms-overflow-style: none;
+}
+
+@supports (scrollbar-width: none) {
+    .no-scrollbar {
+        scrollbar-width: none;
+    }
+}
+
+/* Force Left Alignment for Inputs and Placeholders */
+input#phone-input,
+input#name-input {
+    text-align: left !important;
+}
+
+/* Individual selectors for placeholder stability */
+input#phone-input::-webkit-input-placeholder {
+    text-align: left !important;
+    opacity: 1;
+    padding-left: 0 !important;
+}
+
+input#name-input::-webkit-input-placeholder {
+    text-align: left !important;
+    opacity: 1;
+    padding-left: 0 !important;
+}
+
+input#phone-input::-moz-placeholder {
+    text-align: left !important;
+    opacity: 1;
+}
+
+input#name-input::-moz-placeholder {
+    text-align: left !important;
+    opacity: 1;
+}
+
+input#phone-input:-ms-input-placeholder {
+    text-align: left !important;
+    opacity: 1;
+}
+
+input#name-input:-ms-input-placeholder {
+    text-align: left !important;
+    opacity: 1;
+}
+
+input#phone-input::placeholder {
+    text-align: left !important;
+    opacity: 1;
+}
+
+input#name-input::placeholder {
+    text-align: left !important;
+    opacity: 1;
+}

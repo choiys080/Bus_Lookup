@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activity Check-In Portal</title>
+    <meta name="description" content="Corporate activity selection and itinerary lookup portal">
+    <link rel="stylesheet" href="./styles.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        window.onerror = function (msg) {
+            const h = document.getElementById('debug-console');
+            if (h) { h.classList.remove('hidden'); h.textContent += '\nERR: ' + msg; }
+        };
+    </script>
+    <!-- Mobile Optimized Background Fallback Support -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+</head>
+
+<body class="min-h-[100dvh] flex flex-col items-center p-4 sm:p-8">
+    <div id="app" class="w-full max-w-md rounded-[3rem] flex flex-col relative z-10">
+
+        <!-- HEADER -->
+        <div class="px-8 py-7 flex justify-between items-center relative z-50">
+            <div class="flex items-center gap-4 opacity-0">
+                <!-- HIDDEN: Logo/Text are in the background image -->
+                <div class="w-11 h-11"></div>
+            </div>
+            <div class="flex items-center gap-3">
+                <div id="admin-trigger"
+                    class="group cursor-pointer bg-slate-50 hover:bg-slate-900 p-2.5 rounded-xl transition-soft border border-slate-100 shadow-sm hover:shadow-lg active:scale-95">
+                    <i data-lucide="settings" id="admin-icon"
+                        class="w-5 h-5 text-slate-400 group-hover:text-white transition-soft"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- DECORATION -->
+        <div class="absolute -top-10 -left-10 w-40 h-40 bg-[#00A97A]/10 rounded-full blur-3xl"></div>
+        <div class="absolute -bottom-10 -right-10 w-40 h-40 bg-[#9E2AB5]/10 rounded-full blur-3xl">
+        </div>
+
+        <div class="p-8 relative min-h-[400px] flex flex-col" id="content-area">
+
+            <!-- VIEW: LOADING -->
+            <div id="loading-view" class="flex flex-col items-center justify-center py-24 space-y-8">
+                <div class="relative">
+                    <div class="w-16 h-16 border-[3px] border-slate-100 rounded-full"></div>
+                    <div
+                        class="absolute inset-0 w-16 h-16 border-[3px] border-[#00A97A] border-t-transparent rounded-full animate-spin">
+                    </div>
+                </div>
+                <div class="text-center space-y-2">
+                    <p class="text-[10px] text-[#00A97A] font-black uppercase tracking-[0.3em] animate-pulse">
+                        Establishing Secure Link</p>
+                    <p class="text-[8px] text-slate-300 font-bold uppercase tracking-widest">B. BRAUN CLOUD SERVICES</p>
+                </div>
+            </div>
+
+            <!-- VIEW: ADMIN DASHBOARD -->
+            <div id="admin-view" class="hidden slide-in space-y-6 relative">
+                <!-- HELP BUTTON (Admin Only) -->
+                <button onclick="ui.showView('help-view')"
+                    class="absolute -top-1 right-0 w-10 h-10 bg-white border border-slate-100 text-slate-400 rounded-2xl flex items-center justify-center hover:bg-slate-900 hover:text-white transition-soft shadow-sm z-10 active:scale-90">
+                    <i data-lucide="help-circle" class="w-5 h-5"></i>
+                </button>
+
+                <div class="text-center">
+                    <h2 class="text-xl font-heading font-black text-slate-900 tracking-tight uppercase">Admin Dashboard
+                    </h2>
+                    <p class="text-[9px] text-slate-400 font-bold tracking-[0.2em] uppercase mt-1">Management Console
+                    </p>
+                </div>
+
+                <!-- Stats Summary -->
+                <div class="flex items-center gap-4 bg-slate-50 p-2 rounded-2xl border border-slate-100">
+                    <div
+                        class="flex-1 flex items-center justify-between px-4 py-3 bg-white rounded-xl border border-slate-50 shadow-sm">
+                        <span
+                            class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Registrations</span>
+                        <span id="admin-total-count" class="text-sm font-black text-slate-900">0</span>
+                    </div>
+                    <div
+                        class="flex-1 flex items-center justify-between px-4 py-3 bg-white rounded-xl border border-slate-100 shadow-sm">
+                        <span class="text-[9px] font-black text-[#00A97A] uppercase tracking-widest">Checked-In</span>
+                        <span id="admin-checked-count" class="text-sm font-black text-[#00A97A]">0</span>
+                    </div>
+                </div>
+
+                <!-- Detailed Stats Accordion -->
+                <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100 flex flex-col gap-0" id="stats-wrapper">
+                    <div class="flex items-center justify-between cursor-pointer" onclick="toggleStats()">
+                        <h4
+                            class="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                            <i data-lucide="bar-chart-2" class="w-3 h-3"></i> Activity Statistics
+                        </h4>
+                        <i data-lucide="chevron-down" id="stats-chevron"
+                            class="w-3 h-3 text-slate-400 transition-transform"></i>
+                    </div>
+                    <div id="stats-container"
+                        class="hidden grid grid-cols-2 gap-2 max-h-40 overflow-y-auto custom-scrollbar mt-3">
+                        <!-- Stats injected here -->
+                    </div>
+                </div>
+
+                <!-- List & Search -->
+                <div class="space-y-4">
+                    <div class="relative group">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400"></i>
+                        </div>
+                        <input type="text" id="admin-search-input" onkeyup="filterAdminList()"
+                            placeholder="Search Name or Phone..."
+                            class="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[10px] font-bold text-slate-700 outline-none focus:border-[#00A97A] focus:bg-white transition-soft placeholder:text-slate-300 uppercase tracking-wider">
+                    </div>
+
+                    <div class="flex items-center justify-between gap-4">
+                        <div class="flex bg-slate-100 p-1 rounded-xl">
+                            <button onclick="switchAdminTab('status')" id="tab-status-btn"
+                                class="px-3 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-lg transition-soft bg-white text-[#00A97A] shadow-sm">List</button>
+                            <button onclick="switchAdminTab('log')" id="tab-log-btn"
+                                class="px-3 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-lg transition-soft text-slate-400 hover:text-slate-600">Log</button>
+                        </div>
+                        <div class="flex gap-1.5 overflow-x-auto no-scrollbar">
+                            <button onclick="sortAttendance('status')" id="sort-status-btn"
+                                class="px-3 py-1.5 bg-[#00A97A] text-white text-[8px] font-black uppercase tracking-widest rounded-lg shadow-md shadow-[#00A97A]/20 transition-soft">Status</button>
+                            <button onclick="sortAttendance('name')" id="sort-name-btn"
+                                class="px-3 py-1.5 bg-white border border-slate-100 text-slate-400 text-[8px] font-black uppercase tracking-widest rounded-lg transition-soft">Name</button>
+                            <button onclick="sortAttendance('course')" id="sort-course-btn"
+                                class="px-3 py-1.5 bg-white border border-slate-100 text-slate-400 text-[8px] font-black uppercase tracking-widest rounded-lg transition-soft">Course</button>
+                        </div>
+                    </div>
+
+                    <div id="attendance-status-container">
+                        <div id="attendance-list" class="max-h-64 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
+                            <p class="text-slate-400 text-center py-10 text-[10px] font-bold uppercase tracking-widest">
+                                Loading status...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="checkin-log-container" class="hidden space-y-3">
+                    <div id="checkin-log" class="max-h-64 overflow-y-auto space-y-2 pr-2 custom-scrollbar text-[10px]">
+                        <p class="text-slate-400 text-center py-10 font-bold uppercase tracking-widest">Loading log...
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Admin Actions -->
+                <div id="admin-actions-toolbar" class="flex gap-2 mt-4">
+                    <button onclick="exportFullReport()"
+                        class="flex-1 py-3 text-[9px] font-black text-slate-500 bg-white rounded-xl border border-slate-100 shadow-sm hover:border-[#00A97A] hover:text-[#00A97A] transition-soft uppercase tracking-widest">
+                        <i data-lucide="download" class="w-3 h-3 inline-block mr-1 mb-0.5"></i> Export
+                    </button>
+                    <button onclick="ui.showView('setup-view'); initSetup();"
+                        class="flex-1 py-3 text-[9px] font-black text-slate-500 bg-white rounded-xl border border-slate-100 shadow-sm hover:border-amber-400 hover:text-amber-500 transition-soft uppercase tracking-widest">
+                        <i data-lucide="settings" class="w-3 h-3 inline-block mr-1 mb-0.5"></i> Config
+                    </button>
+                    <button onclick="clearCheckins()"
+                        class="flex-1 py-3 text-[9px] font-black text-rose-400 bg-white rounded-xl border border-slate-100 shadow-sm hover:bg-rose-50 hover:border-rose-200 hover:text-rose-500 transition-soft uppercase tracking-widest">
+                        <i data-lucide="trash-2" class="w-3 h-3 inline-block mr-1 mb-0.5"></i> Clear
+                    </button>
+                </div>
+
+                <!-- CSV Upload -->
+                <div class="space-y-4 pt-4">
+                    <div class="bg-slate-50 border border-slate-100 rounded-2xl p-4 text-center hover:bg-slate-100/50 cursor-pointer transition-soft group"
+                        id="drop-zone">
+                        <div class="flex items-center justify-center gap-3">
+                            <i data-lucide="upload-cloud" class="w-4 h-4 text-slate-400 group-hover:text-[#00A97A]"></i>
+                            <p class="text-[9px] text-slate-500 font-black uppercase tracking-[0.2em]">Update Database
+                                (CSV)</p>
+                        </div>
+                        <input type="file" id="csv-upload" accept=".csv" class="hidden"
+                            aria-label="Upload Participant CSV">
+                    </div>
+                    <div id="upload-msg"
+                        class="text-center text-[10px] font-black uppercase tracking-widest h-4 text-[#00A97A]"></div>
+                    <button onclick="ui.showView('input-view')"
+                        class="w-full py-5 bg-slate-900 text-white rounded-2xl font-black text-[10px] tracking-[0.3em] uppercase shadow-2xl hover:-translate-y-1 transition-soft">EXIT
+                        CONSOLE</button>
+                </div>
+            </div>
+
+            <!-- VIEW: INPUT (LOGIN) -->
+            <div id="input-view" class="hidden slide-in flex flex-col flex-1 justify-end pb-10">
+                <!-- Spacer to reveal Background Logo -->
+                <div class="flex-1 min-h-[160px]"></div>
+
+                <div class="space-y-6 p-2">
+
+                    <!-- ACTIVITY SELECTION BAR -->
+                    <div
+                        class="bg-[#9E2AB5]/90 backdrop-blur-md text-white py-4 px-6 rounded-2xl text-center shadow-lg shadow-[#9E2AB5]/20 mb-6 border border-white/10">
+                        <span id="input-activity-title" class="text-sm font-black uppercase tracking-tight">Day 2
+                            (12-Mar) 선택 Activity</span>
+                    </div>
+
+                    <div class="space-y-4">
+                        <!-- NAME INPUT (VISUAL ONLY) -->
+                        <div class="space-y-2 opacity-60">
+                            <label
+                                class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">성명</label>
+                            <div
+                                class="flex items-center bg-white/60 backdrop-blur-sm border border-slate-200/50 rounded-2xl shadow-sm overflow-hidden group">
+                                <div class="pl-4 flex items-center pointer-events-none text-slate-500">
+                                    <i data-lucide="user" class="w-5 h-5"></i>
+                                </div>
+                                <input type="text" id="name-input" placeholder="성명" disabled readonly
+                                    class="flex-1 pl-3 pr-5 py-4 bg-transparent outline-none font-bold text-slate-600 cursor-not-allowed text-left">
+                            </div>
+                        </div>
+
+                        <!-- PHONE INPUT -->
+                        <div class="space-y-4">
+                            <label
+                                class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">연락처</label>
+                            <div class="flex gap-2">
+                                <!-- Country Code -->
+                                <div class="relative w-24 group">
+                                    <input type="tel" id="country-code-input" value="82" title="Country Code"
+                                        aria-label="Country Code"
+                                        class="w-full pl-6 pr-3 py-4 bg-white/90 backdrop-blur-sm border border-slate-200/50 rounded-2xl focus:ring-4 focus:ring-[#00A97A]/10 focus:border-[#00A97A] outline-none transition-soft font-semibold text-slate-800 text-center shadow-sm">
+                                    <div
+                                        class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+                                        <i data-lucide="plus" class="w-3.5 h-3.5 text-slate-400"></i>
+                                    </div>
+                                </div>
+                                <!-- Phone Body -->
+                                <div
+                                    class="flex-1 flex items-center bg-white/90 backdrop-blur-sm border border-slate-200/50 rounded-2xl focus-within:ring-4 focus-within:ring-[#00A97A]/10 focus-within:border-[#00A97A] transition-soft group shadow-sm overflow-hidden">
+                                    <div
+                                        class="pl-4 flex items-center pointer-events-none transition-soft group-focus-within:text-[#00A97A]">
+                                        <i data-lucide="phone" class="w-5 h-5 text-slate-400"></i>
+                                    </div>
+                                    <input type="tel" id="phone-input" placeholder="010-0000-0000"
+                                        class="flex-1 pl-3 pr-5 py-4 bg-transparent outline-none transition-soft placeholder:text-slate-400 font-semibold text-slate-800 text-left">
+                                </div>
+                            </div>
+                        </div>
+
+                        <button id="verify-btn"
+                            class="w-full bg-[#00A97A]/90 backdrop-blur-sm text-white py-5 rounded-2xl font-black text-lg shadow-xl shadow-[#00A97A]/20 hover:shadow-[#00A97A]/40 hover:-translate-y-0.5 active:translate-y-0 transition-soft flex items-center justify-center gap-3 uppercase tracking-tight mt-6 border border-white/10">
+                            <span>지금 확인하기</span>
+                            <i data-lucide="chevron-right" class="w-6 h-6"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: RESULT (ITINERARY) -->
+            <div id="result-view" class="hidden slide-in space-y-4 flex-1">
+
+                <!-- Name & Dept (No initials) -->
+                <div class="text-center">
+                    <div class="space-y-1">
+                        <h3 class="text-[22px] font-black text-black tracking-tight"><span id="res-name">User</span> 님
+                        </h3>
+                        <p id="res-dept" class="text-[11px] text-slate-400 font-bold uppercase tracking-widest"></p>
+                    </div>
+                </div>
+
+                <!-- Course Title (Confirmation Box - Yellow) -->
+                <div class="px-5 py-6 bg-[#FEF9E7] border border-[#F9EAB8] rounded-xl text-center mx-3">
+                    <p class="text-[12px] text-slate-500 font-bold mb-1">선택투어는</p>
+                    <h4 id="res-activity-detail" class="text-[19px] font-black text-black tracking-tight leading-tight">
+                        Activity Name</h4>
+                    <p class="text-[12px] text-slate-500 font-bold mt-1">입니다</p>
+                </div>
+
+                <!-- Activity Header Bar (Purple) -->
+                <div class="bg-[#9E2AB5] text-white py-2.5 px-6 rounded-xl text-center shadow-md mx-3">
+                    <span id="res-activity-title" class="text-[13px] font-black tracking-widest">선택 Activity 안내</span>
+                </div>
+
+                <!-- Info Grid: 출발 & 장소 & 담당 (3 Column) -->
+                <div class="grid grid-cols-2 gap-3 mx-3">
+                    <div class="bg-[#F1F8F5] border border-[#E1EFEC] rounded-xl p-4 flex flex-col items-center">
+                        <span id="res-time-header"
+                            class="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1">출발</span>
+                        <span id="res-time" class="text-lg font-black text-slate-900">09:00</span>
+                    </div>
+                    <div class="bg-[#F1F8F5] border border-[#E1EFEC] rounded-xl p-4 flex flex-col items-center">
+                        <span id="res-place-header"
+                            class="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1">장소</span>
+                        <span id="res-place" class="text-lg font-black text-slate-900 text-center">-</span>
+                    </div>
+                    <div
+                        class="bg-[#F1F8F5] border border-[#E1EFEC] rounded-xl p-4 flex flex-col items-center col-span-2">
+                        <span id="res-guide-header"
+                            class="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1">담당</span>
+                        <span id="res-guide" class="text-lg font-black text-slate-900 text-center">-</span>
+                    </div>
+                </div>
+
+                <!-- Summary & Duration (Rows) -->
+                <div class="mx-3 space-y-0.5 border-t border-b border-slate-100 py-2">
+                    <div class="flex items-center text-[13px]">
+                        <span id="res-summary-header"
+                            class="w-24 font-black text-slate-400 uppercase tracking-tight">Course 요약</span>
+                        <span id="res-course-summary" class="flex-1 font-bold text-slate-700">-</span>
+                    </div>
+                    <div class="flex items-center text-[13px]">
+                        <span id="res-duration-header"
+                            class="w-24 font-black text-slate-400 uppercase tracking-tight">Duration</span>
+                        <span id="res-duration" class="flex-1 font-bold text-slate-700">-</span>
+                    </div>
+                </div>
+
+                <!-- Timeline / Schedule Table -->
+                <div class="mx-2 overflow-hidden border border-slate-100 rounded-2xl">
+                    <table class="w-full text-left border-collapse bg-white">
+                        <thead class="bg-slate-50 border-b border-slate-100">
+                            <tr>
+                                <th id="res-timeline-time-header"
+                                    class="px-4 py-2 text-[12px] font-black text-slate-400 uppercase tracking-widest w-24">
+                                    Time</th>
+                                <th class="px-4 py-2 text-[12px] font-black text-slate-400 uppercase tracking-widest">내용
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="timeline-container" class="divide-y divide-slate-50">
+                            <!-- Rows injected by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Notice / Remark Box -->
+                <div id="notice-box" class="hidden mx-2">
+                    <div class="bg-purple-50/50 rounded-2xl p-4 border border-purple-100">
+                        <div class="space-y-4">
+                            <div id="notice-supplies-container">
+                                <span id="res-supplies-header"
+                                    class="text-[13px] font-black text-purple-400 uppercase tracking-widest block mb-1">준비물
+                                    (Supplies)</span>
+                                <div id="notice-supplies"
+                                    class="text-[14px] text-purple-900/70 font-bold leading-relaxed px-3 py-2 bg-white/50 rounded-lg">
+                                    <span></span>
+                                </div>
+                            </div>
+                            <div id="notice-warning-container">
+                                <span id="res-notice-header"
+                                    class="text-[13px] font-black text-orange-400 uppercase tracking-widest block mb-1">주의사항
+                                    (Notice)</span>
+                                <div id="notice-warning"
+                                    class="text-[14px] text-orange-900/70 font-bold leading-relaxed px-3 py-2 bg-white/50 rounded-lg">
+                                    <span></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reset & Logo -->
+                <div class="pb-10 flex flex-col items-center gap-8">
+                    <button id="reset-btn"
+                        class="group inline-flex items-center gap-3 px-8 py-4 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] shadow-xl hover:-translate-y-1 transition-soft active:translate-y-0">
+                        <i data-lucide="arrow-left" class="w-4 h-4 group-hover:-translate-x-1 transition-transform"></i>
+                        <span>New Search</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- VIEW: SETUP WIZARD -->
+            <div id="setup-view" class="hidden slide-in space-y-6">
+                <div class="text-center">
+                    <div class="inline-flex items-center justify-center w-14 h-14 bg-[#00A97A]/10 rounded-full mb-3">
+                        <i data-lucide="settings-2" class="w-7 h-7 text-[#00A97A]"></i>
+                    </div>
+                    <h2 class="text-lg font-black text-slate-900 tracking-tight">System Setup</h2>
+                    <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Configure Database &
+                        Event</p>
+                </div>
+
+                <div class="space-y-4 bg-white/50 p-6 rounded-[2.5rem] border border-slate-100 shadow-sm relative">
+                    <button id="setup-help-toggle"
+                        class="absolute top-4 right-4 text-slate-300 hover:text-[#00A97A] transition-soft">
+                        <i data-lucide="help-circle" class="w-4 h-4"></i>
+                    </button>
+
+                    <div id="setup-guide"
+                        class="hidden space-y-3 bg-[#F1F8F5] border border-[#E1EFEC] p-4 rounded-2xl mb-4">
+                        <h4 class="text-[10px] font-black text-[#00A97A] uppercase tracking-widest">How to get the
+                            snippet:</h4>
+                        <ol class="text-[9px] text-slate-600 font-bold space-y-2 list-decimal ml-4 leading-relaxed">
+                            <li>Open <a href="https://console.firebase.google.com/" target="_blank"
+                                    class="text-[#00A97A] underline">Firebase Console</a></li>
+                            <li>Project Settings > General</li>
+                            <li>Scroll to "Your apps"</li>
+                            <li>Select "Config" and copy the <span class="text-rose-500 font-black">{ ... }</span> block
+                            </li>
+                        </ol>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Firebase
+                            Config Snippet</label>
+                        <textarea id="setup-snippet" placeholder="Paste { apiKey: '...', ... } here"
+                            class="w-full h-28 px-5 py-4 bg-white border border-slate-100 rounded-2xl text-[11px] font-medium focus:ring-2 focus:ring-[#00A97A]/20 focus:border-[#00A97A] outline-none transition-soft custom-scrollbar resize-none"
+                            spellcheck="false"></textarea>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Event
+                            Name</label>
+                        <input type="text" id="setup-app-id" placeholder="e.g. annual-kickoff-2026"
+                            class="w-full px-5 py-4 bg-white border border-slate-100 rounded-2xl text-xs font-bold focus:ring-2 focus:ring-[#00A97A]/20 focus:border-[#00A97A] outline-none transition-soft">
+                    </div>
+
+                    <button id="save-setup-btn"
+                        class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-[11px] tracking-[0.2em] uppercase shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:scale-95 transition-soft flex items-center justify-center gap-2">
+                        <span>Initialize</span>
+                        <i data-lucide="zap" class="w-3.5 h-3.5 fill-current"></i>
+                    </button>
+
+                    <p id="setup-error" class="hidden text-rose-500 text-[9px] font-bold text-center leading-relaxed">
+                    </p>
+                </div>
+            </div>
+
+            <!-- VIEW: ERROR -->
+            <div id="error-view"
+                class="hidden slide-in flex flex-col items-center justify-center py-10 px-4 text-center space-y-6">
+                <div class="relative">
+                    <div
+                        class="w-16 h-16 bg-rose-50 rounded-[1.5rem] flex items-center justify-center mx-auto shadow-sm">
+                        <i data-lucide="alert-triangle" class="w-8 h-8 text-rose-400"></i>
+                    </div>
+                </div>
+                <div class="space-y-1.5">
+                    <h2 class="text-xl font-heading font-black text-slate-900 tracking-tight uppercase">정보를 찾을 수 없습니다
+                    </h2>
+                    <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Please Check Your Name &
+                        Phone Number</p>
+                </div>
+                <button onclick="showView('input-view')"
+                    class="w-full max-w-[200px] bg-slate-900 text-white font-black py-4 rounded-2xl text-[9px] tracking-[0.2em] uppercase shadow-2xl hover:-translate-y-1 transition-soft">다시
+                    시도하기</button>
+            </div>
+
+
+
+            <!-- VIEW: HELP -->
+            <div id="help-view" class="hidden slide-in space-y-6">
+                <div class="text-center">
+                    <div class="inline-flex items-center justify-center w-16 h-16 bg-blue-50/10 rounded-full mb-4">
+                        <i data-lucide="info" class="w-8 h-8 text-blue-400"></i>
+                    </div>
+                    <h2 class="text-xl font-black text-slate-900 tracking-tight">How to Use</h2>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Quick Guide</p>
+                </div>
+
+                <div class="space-y-4 bg-white/50 p-6 rounded-[2rem] border border-slate-100 shadow-sm">
+                    <div class="space-y-2">
+                        <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">1. Setup
+                            Firebase</h3>
+                        <p class="text-[12px] text-slate-700 px-2">Go to 'Config' and paste your Firebase SDK snippet.
+                            This connects the app to your database.</p>
+                    </div>
+                    <div class="space-y-2">
+                        <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">2. Upload CSV
+                        </h3>
+                        <p class="text-[12px] text-slate-700 px-2">Use the 'Update Database (CSV)' section to upload
+                            participant data. Make sure your CSV has 'name', 'phone', 'activity', 'department', 'time',
+                            'guide', 'summary', 'duration', 'notice_supplies', 'notice_warning' columns.</p>
+                    </div>
+                    <div class="space-y-2">
+                        <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">3. Check-in
+                        </h3>
+                        <p class="text-[12px] text-slate-700 px-2">Enter the participant's name and phone number to find
+                            their activity details.</p>
+                    </div>
+                    <button onclick="ui.showView('input-view')"
+                        class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-[13px] tracking-[0.1em] uppercase shadow-lg shadow-slate-900/10 hover:shadow-xl hover:-translate-y-0.5 active:scale-95 transition-soft flex items-center justify-center gap-2">
+                        <span>Got It!</span>
+                        <i data-lucide="check" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    </div>
+
+    <div class="py-12 px-10 text-center mt-auto">
+        <div class="flex flex-col items-center gap-4">
+            <!-- Two-column footer layout -->
+            <div class="flex flex-row items-center justify-center w-full max-w-md px-4 gap-8">
+                <!-- Left: leap to lead logo -->
+                <div class="flex items-center">
+                    <img src="kickoff_logo.jpg" alt="Leap to Lead Logo" class="h-14 opacity-90">
+                </div>
+                <!-- Vertical divider -->
+                <div class="h-12 w-px bg-slate-300"></div>
+                <!-- Right: B BRAUN SHARING EXPERTISE logo -->
+                <div class="flex items-center">
+                    <img src="logo.png" alt="B BRAUN SHARING EXPERTISE" class="h-8 opacity-90">
+                </div>
+            </div>
+            <p class="text-[8px] text-slate-300 font-bold uppercase tracking-widest">© 2026 B. Braun Management Korea
+            </p>
+
+            <!-- DEVELOPER FINGERPRINT -->
+            <div class="mt-2 pt-6 border-t border-slate-100/50 w-full max-w-[160px] flex flex-col items-center gap-2.5">
+                <span class="text-[7px] text-slate-200 font-black uppercase tracking-[0.4em]">Project Signature</span>
+                <a href="javascript:void(0)" onclick="openDevModal()"
+                    class="group flex items-center gap-2 text-[9px] text-slate-400 font-bold transition-soft hover:scale-105">
+                    <span
+                        class="bg-slate-50 px-2 py-0.5 rounded-[4px] text-[7px] border border-slate-200/50 text-slate-300 group-hover:bg-slate-900 group-hover:text-white group-hover:border-slate-900 transition-soft uppercase tracking-tighter">dev</span>
+                    <span
+                        class="tracking-[0.5em] font-extrabold uppercase opacity-60 group-hover:opacity-100 transition-soft">OCHOI80</span>
+                </a>
+            </div>
+
+            <div id="debug-console"
+                class="hidden text-[8px] text-slate-400 mt-4 p-2 bg-slate-50 rounded whitespace-pre-wrap text-left max-h-32 overflow-y-auto">
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <!-- ADMIN PASSWORD MODAL -->
+    <div id="password-modal"
+        class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-6">
+        <div
+            class="bg-white rounded-[2.5rem] p-10 w-full max-w-sm shadow-2xl border border-white/20 transform transition-soft">
+            <div class="w-16 h-16 bg-[#00A97A]/5 rounded-2xl flex items-center justify-center mb-6 mx-auto">
+                <i data-lucide="lock" class="w-8 h-8 text-[#00A97A]"></i>
+            </div>
+            <div class="text-center mb-8">
+                <h3 class="text-xl font-heading font-black text-slate-900 tracking-tight uppercase">Admin Access</h3>
+                <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-1">Management Console
+                    Authentication</p>
+            </div>
+            <div class="space-y-4">
+                <input type="password" id="password-input" placeholder="ACCESS KEY"
+                    class="w-full px-6 py-5 bg-slate-50 border border-slate-200 rounded-2xl text-center font-black text-xs tracking-[0.3em] outline-none focus:border-[#00A97A] focus:bg-white transition-soft placeholder:text-slate-300">
+                <p id="password-error"
+                    class="hidden text-rose-500 text-[10px] font-black text-center uppercase tracking-widest">Validation
+                    Failed. Retry.</p>
+                <div class="flex gap-3 pt-4">
+                    <button onclick="cancelPassword()"
+                        class="flex-1 py-4 bg-slate-100 text-slate-400 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-200 transition-soft">Close</button>
+                    <button onclick="submitPassword()"
+                        class="flex-1 py-4 bg-[#00A97A] text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-[#00A97A]/20 hover:-translate-y-1 transition-soft">Authorize</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DEVELOPER IDENTITY MODAL -->
+    <div id="dev-modal"
+        class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-md flex items-center justify-center z-[100] p-6 transition-soft">
+        <div
+            class="bg-white rounded-[2.5rem] p-10 w-full max-w-sm shadow-2xl border border-white/20 transform transition-soft relative overflow-hidden">
+            <!-- Background Decoration -->
+            <div class="absolute -top-24 -right-24 w-48 h-48 bg-slate-50 rounded-full blur-3xl opacity-50"></div>
+
+            <div class="relative z-10 text-center">
+                <div
+                    class="w-24 h-24 bg-white rounded-3xl flex items-center justify-center mb-6 mx-auto shadow-2xl overflow-hidden p-1 border border-slate-100">
+                    <img src="dev_avatar.png" alt="OCHOI80 Logo" class="w-full h-full object-cover rounded-2xl">
+                </div>
+
+                <div class="text-center mb-8">
+                    <h3 class="text-2xl font-black text-slate-900 tracking-tight uppercase">OCHOI80</h3>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-[0.3em] mt-2">Architecture &
+                        Experience</p>
+                </div>
+
+                <div class="space-y-6 pt-6 border-t border-slate-100">
+                    <div>
+                        <p class="text-[8px] text-slate-300 font-bold uppercase tracking-widest mb-3">Direct Contact</p>
+                        <a href="mailto:ochoi80.dev@gmail.com"
+                            class="flex items-center gap-4 p-4 bg-slate-50 hover:bg-slate-900 rounded-2xl group transition-soft">
+                            <div class="p-2 bg-white rounded-xl shadow-sm group-hover:bg-slate-800 transition-soft">
+                                <i data-lucide="mail"
+                                    class="w-4 h-4 text-slate-400 group-hover:text-white transition-soft"></i>
+                            </div>
+                            <div class="flex flex-col">
+                                <span
+                                    class="text-[9px] text-slate-400 font-bold uppercase tracking-widest group-hover:text-slate-500 transition-soft">Email
+                                    Me</span>
+                                <span
+                                    class="text-[11px] text-slate-900 font-black group-hover:text-white transition-soft">ochoi80.dev@gmail.com</span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="flex gap-3 mt-8">
+                    <button onclick="closeDevModal()"
+                        class="flex-1 py-4 bg-slate-100 text-slate-900 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-soft">Close
+                        Profile</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="./app.js"></script>
+</body>
+
+</html>

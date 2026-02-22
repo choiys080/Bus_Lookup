@@ -1,0 +1,219 @@
+diff --git a/modv2/app.js b/modv2/app.js
+index 638b7f3..81b6134 100644
+--- a/modv2/app.js
++++ b/modv2/app.js
+@@ -187,7 +187,7 @@ if (auth) {
+                 }
+                 ui.showView('input-view');
+             } catch (err) {
+-                ui.showConnectionError("데이터 연결 실패: " + err.message);
++                ui.showConnectionError("?�이???�결 ?�패: " + err.message);
+             }
+         }
+     });
+@@ -202,7 +202,7 @@ const handleLookup = () => {
+             const codeVal = document.getElementById('country-code-input')?.value;
+ 
+             if (!phoneVal) {
+-                alert("연락처를 입력해주세요.");
++                alert("?�락처�? ?�력?�주?�요.");
+                 return;
+             }
+ 
+@@ -215,7 +215,7 @@ const handleLookup = () => {
+ 
+             // Perform Search
+             let user = PARTICIPANTS.find(u => {
+-                const storedRaw = u.phone || u.휴대전화 || '';
++                const storedRaw = u.phone || u.?��??�화 || '';
+                 const storedSanitized = sanitizePhoneNumber(storedRaw);
+                 return storedSanitized === sanitizedPhone;
+             });
+@@ -228,7 +228,7 @@ const handleLookup = () => {
+                 try {
+                     PARTICIPANTS = await fetchParticipants();
+                     user = PARTICIPANTS.find(u => {
+-                        const s = sanitizePhoneNumber(u.phone || u.휴대전화 || '');
++                        const s = sanitizePhoneNumber(u.phone || u.?��??�화 || '');
+                         return s === sanitizedPhone;
+                     });
+                 } finally {
+@@ -255,10 +255,10 @@ const handleLookup = () => {
+                     if (!exists) {
+                         const ref = doc(db, 'artifacts', appId, 'public', 'data', 'checkins', sanitizedPhone);
+                         setDoc(ref, {
+-                            name: user.name || user.이름 || '',
++                            name: user.name || user.?�름 || '',
+                             phone: sanitizedPhone,
+-                            activity: user.activity_name || user.액티비티 || user.bus || 'Activity',
+-                            department: user.department || user.부서 || '',
++                            activity: user.activity_name || user.?�티비티 || user.bus || 'Activity',
++                            department: user.department || user.부??|| '',
+                             checkedInAt: new Date().toISOString()
+                         });
+                     }
+@@ -392,13 +392,13 @@ window.exportFullReport = () => {
+     });
+     const headers = ['Name', 'Phone', 'Department', 'Activity', 'Status', 'Time'];
+     const rows = PARTICIPANTS.map(p => {
+-        const sPhone = sanitizePhoneNumber(p.phone || p.휴대전화 || '');
++        const sPhone = sanitizePhoneNumber(p.phone || p.?��??�화 || '');
+         const check = checkedMap.get(sPhone);
+         return [
+-            p.name || p.이름,
+-            p.phone || p.휴대전화 || '',
+-            p.department || p.부서 || '',
+-            p.activity_name || p.액티비티 || p.bus || '',
++            p.name || p.?�름,
++            p.phone || p.?��??�화 || '',
++            p.department || p.부??|| '',
++            p.activity_name || p.?�티비티 || p.bus || '',
+             check ? 'CHECKED-IN' : 'PENDING',
+             check ? new Date(check.checkedInAt).toLocaleString('ko-KR') : '-'
+         ];
+@@ -431,15 +431,15 @@ if (csvUpload) csvUpload.onchange = async (e) => {
+         };
+ 
+         // Extract Activity Headers (D=3, E=4, G=6)
+-        const activityHeader = headers[3] || '선택 Activity 안내';
++        const activityHeader = headers[3] || '?�택 Activity ?�내';
+         const timeHeader = headers[4] || '출발';
+-        const meetingHeader = headers[5] || '장소';
+-        const guideHeader = headers[6] || '담당';
+-        const summaryHeader = headers[7] || 'Course 요약';
++        const meetingHeader = headers[5] || '?�소';
++        const guideHeader = headers[6] || '?�당';
++        const summaryHeader = headers[7] || 'Course ?�약';
+         const durationHeader = headers[8] || 'Duration';
+         const timelineTimeHeader = headers[9] || 'Time';
+         const suppliesHeader = headers[15] || '준비물 (Supplies)';
+-        const noticeHeader = headers[16] || '주의사항 (Notice)';
++        const noticeHeader = headers[16] || '주의?�항 (Notice)';
+ 
+         const newData = [];
+         for (let i = 1; i < lines.length; i++) {
+@@ -448,23 +448,23 @@ if (csvUpload) csvUpload.onchange = async (e) => {
+             const cols = parseCSVLine(line);
+             const p = {
+                 // Use the index lookup OR the flexible header lookup
+-                name: cols[getIdx('이름')] || cols[0] || '',
+-                department: cols[getIdx('부서')] || cols[1] || '',
+-                phone: sanitizePhoneNumber(cols[getIdx('휴대전화')] || cols[2] || ''),
+-                activity_name: cols[getIdx('액티비티')] || cols[3] || '',
+-                start_time: cols[getIdx('출발시간')] || cols[4] || '',
+-                meeting_point: cols[getIdx('집합장소')] || cols[5] || '',
+-                guide_info: cols[getIdx('가이드 정보')] || cols[6] || '',
+-                course_summary: cols[getIdx('코스 요약')] || cols[7] || '',
+-                duration: cols[getIdx('듀레이션')] || cols[8] || '',
+-                time_1: cols[getIdx('타임')] || cols[9] || '',
+-                schedule_1: cols[getIdx('일정 1')] || cols[10] || '',
+-                time_2: cols[getIdx('타임 2')] || cols[11] || '',
+-                schedule_2: cols[getIdx('일정 2')] || cols[12] || '',
+-                time_3: cols[getIdx('타임 3')] || cols[13] || '',
+-                schedule_3: cols[getIdx('일정 3')] || cols[14] || '',
++                name: cols[getIdx('?�름')] || cols[0] || '',
++                department: cols[getIdx('부??)] || cols[1] || '',
++                phone: sanitizePhoneNumber(cols[getIdx('?��??�화')] || cols[2] || ''),
++                activity_name: cols[getIdx('?�티비티')] || cols[3] || '',
++                start_time: cols[getIdx('출발?�간')] || cols[4] || '',
++                meeting_point: cols[getIdx('집합?�소')] || cols[5] || '',
++                guide_info: cols[getIdx('가?�드 ?�보')] || cols[6] || '',
++                course_summary: cols[getIdx('코스 ?�약')] || cols[7] || '',
++                duration: cols[getIdx('?�?�이??)] || cols[8] || '',
++                time_1: cols[getIdx('?�??)] || cols[9] || '',
++                schedule_1: cols[getIdx('?�정 1')] || cols[10] || '',
++                time_2: cols[getIdx('?�??2')] || cols[11] || '',
++                schedule_2: cols[getIdx('?�정 2')] || cols[12] || '',
++                time_3: cols[getIdx('?�??3')] || cols[13] || '',
++                schedule_3: cols[getIdx('?�정 3')] || cols[14] || '',
+                 supplies: cols[getIdx('준비물')] || cols[15] || '',
+-                notice: cols[getIdx('주의사항')] || cols[16] || ''
++                notice: cols[getIdx('주의?�항')] || cols[16] || ''
+             };
+             newData.push(p);
+         }
+@@ -539,8 +539,9 @@ document.addEventListener('DOMContentLoaded', () => {
+         img.decode().then(() => {
+             const style = document.createElement('style');
+             style.innerHTML = `
+-                #app::before {
+-                    background-image: url('bg_optimized.jpg') !important;
++                body {
++                    /* background handled by styles.css */
++                    background-attachment: fixed !important;
+                 }
+             `;
+             document.head.appendChild(style);
+@@ -550,7 +551,7 @@ document.addEventListener('DOMContentLoaded', () => {
+             .catch((err) => {
+                 console.error("Background decode failed", err);
+                 const style = document.createElement('style');
+-                style.innerHTML = `body::before { opacity: 1 !important; }`;
++                style.innerHTML = `body { opacity: 1 !important; }`;
+                 document.head.appendChild(style);
+             });
+     }, 1000);
+@@ -562,3 +563,4 @@ if (!isConfigured) {
+     initSetup();
+     console.warn("System not configured. Redirecting to setup.");
+ }
++
+diff --git a/modv2/styles.css b/modv2/styles.css
+index 63fe04e..a207270 100644
+--- a/modv2/styles.css
++++ b/modv2/styles.css
+@@ -19,7 +19,7 @@ body {
+ }
+ 
+ /* Sharp Image Inside: Displaying the bg png as requested */
+-#app::before {
++.hide-old-bg {
+     content: "";
+     position: absolute;
+     inset: 0;
+@@ -38,7 +38,7 @@ body {
+ 
+ /* Removed duplicate bg image layers from #app to satisfy "no bg png again" */
+ 
+-body::before {
++.hide-old-bg {
+     content: "";
+     position: fixed;
+     top: 0;
+@@ -51,8 +51,8 @@ body::before {
+ }
+ 
+ /* Triggered by JS */
+-body.bg-ready::before,
+-#app.bg-ready::before {
++.hide-old-bg,
++.hide-old-bg {
+     opacity: 1 !important;
+ }
+ 
+@@ -60,16 +60,16 @@ body.bg-ready::before,
+ 
+ /* Result View Styling */
+ body.internal-clean::before {
+-    background: #FFFFFF !important;
++    background: transparent !important;
+     background-image: none !important;
+ }
+ 
+ body.internal-clean #app {
+-    background: #FFFFFF !important;
++    background: transparent !important;
+     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05) !important;
+ }
+ 
+-body.internal-clean #app::before {
++body.internal-clean .hide-old-bg {
+     display: none !important;
+ }
+ 
+@@ -223,3 +223,5 @@ input#name-input::placeholder {
+     text-align: left !important;
+     opacity: 1;
+ }
++
++body.bg-ready { background-image: url('bg_optimized.jpg'); background-attachment: fixed; background-size: cover; background-position: center; }
