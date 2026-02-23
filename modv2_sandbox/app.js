@@ -543,19 +543,23 @@ document.addEventListener('DOMContentLoaded', () => {
         img.decode().then(() => {
             const style = document.createElement('style');
             style.innerHTML = `
-                #app::before {
+                #bg-parallax {
                     background-image: url('bg_optimized.jpg') !important;
+                    opacity: 1 !important;
                 }
             `;
             document.head.appendChild(style);
             document.body.classList.add('bg-ready');
             document.getElementById('app')?.classList.add('bg-ready');
+            // Initialize parallax after background is ready
+            ui.initParallax();
         })
             .catch((err) => {
                 console.error("Background decode failed", err);
                 const style = document.createElement('style');
-                style.innerHTML = `body::before { opacity: 1 !important; }`;
+                style.innerHTML = `#bg-parallax { opacity: 1 !important; }`;
                 document.head.appendChild(style);
+                ui.initParallax();
             });
     }, 1000);
 });

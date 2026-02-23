@@ -4,7 +4,8 @@
   "description": "A cloud-synced self-service portal for event participants to find their bus assignments.",
   "main": "update_hong.js",
   "scripts": {
-    "dev": "http-server ./modv2 -p 3000 -c-1",
+    "dev": "live-server ./modv2_sandbox --port=3000 --no-browser",
+    "dev:modv2": "live-server ./modv2 --port=3000 --no-browser",
     "backup": "powershell -ExecutionPolicy Bypass -File scripts/backup.ps1",
     "backup:watch": "powershell -ExecutionPolicy Bypass -File scripts/auto_backup_monitor.ps1",
     "backup:clean": "powershell -Command \"Remove-Item -Path backups/*.zip -Force\"",
@@ -23,7 +24,8 @@
   },
   "homepage": "https://github.com/choiys080/Bus_Lookup#readme",
   "devDependencies": {
-    "http-server": "^14.1.1"
+    "http-server": "^14.1.1",
+    "live-server": "^1.2.2"
   },
   "dependencies": {
     "playwright": "^1.58.1"

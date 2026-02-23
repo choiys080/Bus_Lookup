@@ -35,8 +35,8 @@ export function showView(id) {
             header.classList.remove('py-2');
         }
         if (contentArea) {
-            contentArea.classList.add('p-8');
-            contentArea.classList.remove('px-8', 'pb-8', 'pt-2');
+            contentArea.classList.add('p-4', 'sm:p-8');
+            contentArea.classList.remove('p-8', 'px-8', 'pb-8', 'pt-2');
         }
     }
 
@@ -178,9 +178,9 @@ export function renderResult(user, inputName, activityTitle, timeHeader, guideHe
                 }
 
                 return `
-                    <tr class="hover:bg-slate-50/50 transition-soft">
+                    <tr class="hover:bg-[#00A97A]/5 transition-soft">
                         <td class="px-4 py-3 text-[13px] font-black text-slate-400 tabular-nums">${time}</td>
-                        <td class="px-4 py-3 text-[13px] font-bold text-slate-700 leading-relaxed">${content}</td>
+                        <td class="px-4 py-3 text-[13px] font-semibold text-slate-800 leading-relaxed">${content}</td>
                     </tr>
                 `;
             }).join('');
@@ -341,21 +341,46 @@ export function renderAttendanceList(participants, checkins, sortMode, searchVal
     }
 
     listEl.innerHTML = displayData.map(p => {
-        return `<div class="flex justify-between items-center bg-white border border-slate-100 rounded-xl px-4 py-2 group hover:border-[#00A97A]/30 transition-soft">
+        return `<div class="flex justify-between items-center bg-white border border-slate-100 rounded-xl px-4 py-2 group hover:border-[#00A97A]/40 hover:shadow-sm transition-soft tap-effect">
                     <div class="flex items-center gap-3">
                         <div class="w-1.5 h-1.5 rounded-full ${p.isChecked ? 'bg-[#00A97A]' : 'bg-slate-200'}"></div>
                         <span class="font-black text-slate-900 text-[11px]">${p.name || p.이름}</span>
-                        <span class="text-[8px] text-slate-300 font-bold uppercase tracking-widest">${p.department || '-'}</span>
+                        <span class="text-[8px] text-slate-400 font-bold uppercase tracking-widest">${p.department || '-'}</span>
                     </div>
                     <div class="flex items-center gap-3">
                         <span class="text-[#9E2AB5] font-black text-[8px] uppercase tracking-widest bg-[#9E2AB5]/5 px-1.5 py-0.5 rounded-md">${(p.activity_name || p.액티비티 || p.bus || '').split(':')[0]}</span>
-                        <div class="w-12 text-center">
+                        <div class="w-12 text-center text-[8px] font-black uppercase tracking-widest">
                             ${p.isChecked
-                ? `<span class="text-[8px] font-black text-[#00A97A] uppercase tracking-widest">Done</span>`
-                : `<span class="text-[8px] font-black text-slate-300 uppercase tracking-widest">Wait</span>`
+                ? `<span class="text-[#00A97A]">Done</span>`
+                : `<span class="text-slate-300">Wait</span>`
             }
                         </div>
                     </div>
                 </div>`;
     }).join('');
+}
+
+export function initParallax() {
+    const bg = document.getElementById('bg-parallax');
+    if (!bg) return;
+
+    let ticking = false;
+    window.addEventListener('scroll', () => {
+        if (!ticking) {
+            window.requestAnimationFrame(() => {
+                const scrolled = window.pageYOffset;
+                const maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+                const progress = Math.min(1, scrolled / maxScroll);
+
+                // Perfect Mapping Parallax: 0% at top, 100% at bottom
+                // Ensures bottom logos are visible at the end of scroll
+                bg.style.backgroundPositionY = `${progress * 100}%`;
+
+                // Clear any leftover transforms
+                bg.style.transform = 'none';
+                ticking = false;
+            });
+            ticking = true;
+        }
+    }, { passive: true });
 }
