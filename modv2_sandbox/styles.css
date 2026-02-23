@@ -32,6 +32,26 @@ body {
         padding-top: 0 !important;
         /* Start from top to allow settings button placement at top right */
     }
+
+    /* Responsive Spacer Variable */
+    :root {
+        --visibility-spacer: 40vw;
+        /* Brought higher from 55vw */
+    }
+
+    /* Landscape adjustment for tablets/wide mobiles */
+    @media (orientation: landscape) {
+        :root {
+            --visibility-spacer: 10vw;
+            /* Brought higher from 20vw */
+        }
+
+        #bg-parallax {
+            background-size: 100% auto !important;
+            background-position: center top !important;
+            /* light gray fallback */
+        }
+    }
 }
 
 #app {
