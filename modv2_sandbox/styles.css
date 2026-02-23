@@ -42,14 +42,24 @@ body {
     /* Landscape adjustment for tablets/wide mobiles */
     @media (orientation: landscape) {
         :root {
-            --visibility-spacer: 10vw;
-            /* Brought higher from 20vw */
+            --visibility-spacer: 8vw;
+            /* Slightly smaller */
         }
 
         #bg-parallax {
             background-size: 100% auto !important;
             background-position: center top !important;
-            /* light gray fallback */
+        }
+
+        /* Override Tailwind sm: min-height constraints that trigger in landscape due to width */
+        #content-area {
+            min-height: 0 !important;
+        }
+
+        /* Ensure spacer follows variable and doesn't stick to desktop/sm height */
+        #input-view>div:first-child,
+        #result-view>div:first-child {
+            height: var(--visibility-spacer) !important;
         }
     }
 }

@@ -17,12 +17,12 @@ export function showView(id) {
         document.body.classList.add('internal-clean');
 
         if (header) {
-            header.classList.remove('py-7');
-            header.classList.add('py-2');
+            header.classList.remove('py-7', 'pt-6', 'pb-2', 'sm:py-7');
+            header.classList.add('pt-4', 'pb-0');
         }
         if (contentArea) {
-            contentArea.classList.remove('p-8');
-            contentArea.classList.add('px-8', 'pb-8', 'pt-2');
+            contentArea.classList.remove('p-4', 'p-8', 'sm:p-8', 'pt-2', 'pt-1');
+            contentArea.classList.add('px-8', 'pb-8', 'pt-0');
         }
     } else {
         document.body.classList.remove('internal-clean');
