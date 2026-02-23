@@ -179,7 +179,7 @@ export function renderResult(user, inputName, activityTitle, timeHeader, guideHe
 
                 return `
                     <tr class="hover:bg-[#00A97A]/5 transition-soft">
-                        <td class="px-4 py-3 text-[13px] font-black text-slate-400 tabular-nums">${time}</td>
+                        <td class="px-4 py-3 text-[13px] font-black text-slate-400 tabular-nums whitespace-nowrap w-[105px]">${time}</td>
                         <td class="px-4 py-3 text-[13px] font-semibold text-slate-800 leading-relaxed">${content}</td>
                     </tr>
                 `;
