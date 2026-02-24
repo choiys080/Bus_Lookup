@@ -50,7 +50,21 @@ export async function batchDeleteAll(collectionName) {
 }
 
 export async function batchUploadParticipants(newData, onProgress) {
-    // Skip delete to avoid timeout - just overwrite existing data
+    const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'participants');
+
+    // 1. Delete ALL existing records FIRST to avoid orphan entries
+    const snapshot = await getDocs(colRef);
+    if (!snapshot.empty) {
+        if (onProgress) onProgress(0, 'Clearing existing data...');
+        const deleteChunks = chunkArray(snapshot.docs, BATCH_SIZE);
+        for (const chunk of deleteChunks) {
+            const batch = writeBatch(db);
+            chunk.forEach(doc => batch.delete(doc.ref));
+            await batch.commit();
+        }
+    }
+
+    // 2. Upload NEW data
     const chunks = chunkArray(newData, BATCH_SIZE);
     let globalIndex = 0;
     for (let i = 0; i < chunks.length; i++) {
@@ -61,6 +75,6 @@ export async function batchUploadParticipants(newData, onProgress) {
             batch.set(ref, p);
         });
         await batch.commit();
-        if (onProgress) onProgress(Math.round(((i + 1) / chunks.length) * 100));
+        if (onProgress) onProgress(Math.round(((i + 1) / chunks.length) * 100), 'Syncing...');
     }
 }

@@ -472,8 +472,8 @@ if (csvUpload) csvUpload.onchange = async (e) => {
             try {
                 const msg = document.getElementById('upload-msg');
                 if (msg) msg.innerHTML = '<span class="animate-pulse">Starting Sync...</span>';
-                await batchUploadParticipants(newData, (pct) => {
-                    if (msg) msg.innerHTML = `<span class="animate-pulse">Syncing: ${pct}%</span>`;
+                await batchUploadParticipants(newData, (pct, status) => {
+                    if (msg) msg.innerHTML = `<span class="animate-pulse">${status || 'Syncing'}: ${pct}%</span>`;
                 });
                 await updateMetadata({
                     activity_header: activityHeader,
