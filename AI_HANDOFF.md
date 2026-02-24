@@ -1,33 +1,31 @@
-# AI Session Handoff - 2026-02-10
+# AI Session Handoff - 2026-02-23
 
 ## Context
 
-We have completed Phase 2 of the refinements for the `modv2` (Bus Lookup / Activity Portal) application. The focus was on Admin Dashboard improvements, data sync stability, and resolving high-priority mobile browser crashes.
+We have updated the global agent rules in `GEMINI.md` to ensure better context awareness and tool discovery. We also generated a new QR code for the V2 itinerary portal using local tools and specific branding.
 
 ## What Changed
 
-- **Mobile Stability**: Optimized `modv2/styles.css` using a fixed pseudo-element and `will-change: transform` for the background image. This preserves the 8MB `bg.png` visual while preventing memory crashes on mobile browsers on scroll.
-- **Admin Sorting**: Refined `js/ui.js` to prioritize "Done" users at the top in Status mode and improved fallback sorting for Course and Name.
-- **Upload Progress**: Added percentage tracking to `js/services.js` and a real-time progress UI message in `app.js` during CSV imports.
-- **Deployment**: Synchronized all refinements to the `gh-pages` branch. The live site is verified at [choiys080.github.io/Bus_Lookup/](https://choiys080.github.io/Bus_Lookup/).
-- **Backup**: Created a full source backup in `modv2_backup_20260209`.
+- **Global Rules**: Updated `C:\Users\choiys\.gemini\GEMINI.md` with mandatory startup research (reading Blueprint, Memory, and Handoff) and mandatory tool discovery (`pip list`, `npm list`, `scripts/`).
+- **QR Code Generation**: Generated `itinerary_v2_qr.png` for `https://bbraun-itinerary-v2.pages.dev` using the local python `qrcode` package and `Pillow`.
+- **Branding**: Established **#00A97A** (RGB 0, 169, 122) as the primary green for QR codes and branding elements.
+- **Dependencies**: Installed `Pillow` in the local python environment to support image-based QR generation.
 
 ## Current State
 
-- **Branch**: `main` (Currently checked out).
-- **Source Folder**: `modv2/` contains the active application files.
-- **Live Site**: Serving from the root of the `gh-pages` branch.
-- **Verified**: Latest fixes for sorting and mobile performance are active and working locally and on the live site.
+- **Official QR Color**: #00A97A.
+- **Active QR File**: `itinerary_v2_qr.png` (points to `bbraun-itinerary-v2.pages.dev`).
+- **Required Packages**: `qrcode`, `Pillow` (Python); `playwright` (Node).
 
 ## Next Steps for Next Agent
 
-1. **Tailwind Migration**: Consider migrating from the Tailwind CDN to a static CSS build to improve mobile load times and reduce CPU usage.
-2. **UI/UX Polish**: Continue with micro-animations and responsive layout refinements as planned in `implementation_plan.md`.
-3. **Data Management**: Monitor Firestore write patterns for large participant lists (current batch size 100).
+1. **Rule Adherence**: Always read `AI_HANDOFF.md`, `Project Blueprint.md`, and `Bus_Lookup_Project_Memory.md` at the start of every session.
+2. **Local Tooling**: Check `scripts/` and existing python/node dependencies before adding new ones or using external APIs.
+3. **QR Sync**: Ensure any new QR codes generated follow the #00A97A color standard.
 
 ## Critical Files
 
-- [app.js](file:///d:/Antigravity/Bus_Lookup/modv2/app.js) (Auth & Admin Handlers)
-- [js/ui.js](file:///d:/Antigravity/Bus_Lookup/modv2/js/ui.js) (Rendering & Sorting Logic)
-- [js/services.js](file:///d:/Antigravity/Bus_Lookup/modv2/js/services.js) (Firestore & CSV Upload)
-- [styles.css](file:///d:/Antigravity/Bus_Lookup/modv2/styles.css) (Mobile Performance Fix)
+- [GEMINI.md](file:///C:/Users/choiys/.gemini/GEMINI.md) (Global Agent Rules)
+- [Project Blueprint.md](file:///d:/Antigravity/Bus_Lookup/Project%20Blueprint.md) (Architecture & Stack)
+- [Bus_Lookup_Project_Memory.md](file:///d:/Antigravity/Bus_Lookup/Bus_Lookup_Project_Memory.md) (Deployment & Domain History)
+- [itinerary_v2_qr.png](file:///d:/Antigravity/Bus_Lookup/itinerary_v2_qr.png) (Latest Branded QR)

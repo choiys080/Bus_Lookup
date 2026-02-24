@@ -15,6 +15,12 @@ Write-Host "Creating backup: $zipFile..." -ForegroundColor Cyan
 $exclude = @("node_modules", ".git", "backups", ".netlify", ".firebase")
 
 # Create ZIP
-Compress-Archive -Path "modv2", "participants_data.csv", "package.json", "styles.css", "update_hong.js" -DestinationPath $zipFile -Force
+Get-ChildItem -Path "modv2_sandbox", "modv2", "js" -Directory | Compress-Archive -DestinationPath $zipFile -Update
+
+# Add root files (try-catch for locks)
+try {
+    Compress-Archive -Path "participants_data.csv", "package.json" -DestinationPath $zipFile -Update -ErrorAction SilentlyContinue
+}
+catch {}
 
 Write-Host "Backup completed successfully." -ForegroundColor Green
