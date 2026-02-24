@@ -30,9 +30,16 @@ export function listenToCheckins(callback) {
     }, (error) => console.error('Check-in listener error:', error));
 }
 
-export async function checkParticipantStatus(phone) {
+export async function checkParticipantStatus(phone, name) {
     const checkinsRef = collection(db, 'artifacts', appId, 'public', 'data', 'checkins');
-    const q = query(checkinsRef, where('phone', '==', phone));
+    let q;
+    if (phone) {
+        q = query(checkinsRef, where('phone', '==', phone));
+    } else if (name) {
+        q = query(checkinsRef, where('name', '==', name));
+    } else {
+        return false;
+    }
     const snapshot = await getDocs(q);
     return !snapshot.empty;
 }

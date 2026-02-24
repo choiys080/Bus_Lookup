@@ -247,12 +247,15 @@ const handleLookup = () => {
 
                 // Logging check-in (deferred)
                 const sPhone = sanitizePhoneNumber(user.phone || user.휴대전화 || '');
-                if (sPhone) {
-                    checkParticipantStatus(sPhone).then(exists => {
+                const userName = user.name || user.이름 || '';
+                const checkInId = sPhone || `name_${userName.replace(/[\s\W]/g, '')}`;
+
+                if (checkInId) {
+                    checkParticipantStatus(sPhone, userName).then(exists => {
                         if (!exists) {
-                            const ref = doc(db, 'artifacts', appId, 'public', 'data', 'checkins', sPhone);
+                            const ref = doc(db, 'artifacts', appId, 'public', 'data', 'checkins', checkInId);
                             setDoc(ref, {
-                                name: user.name || user.이름 || '',
+                                name: userName,
                                 phone: sPhone,
                                 activity: user.activity_name || user.액티비티 || user.bus || 'Activity',
                                 department: user.department || user.부서 || '',

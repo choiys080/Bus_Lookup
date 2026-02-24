@@ -225,15 +225,20 @@ export function updateAdminDashboard(participants, checkins, sortMode, searchVal
 
     // Calculate Valid Unique Check-ins (Matches List View logic)
     const checkedPhones = new Set();
+    const checkedNames = new Set();
     checkins.forEach(c => {
         const sPhone = sanitizePhoneNumber(c.phone || '');
         if (sPhone) checkedPhones.add(sPhone);
+        if (c.name) checkedNames.add(c.name.trim());
     });
 
     let validCheckedCount = 0;
     participants.forEach(p => {
         const sPhone = sanitizePhoneNumber(p.phone || p.휴대전화 || '');
-        if (checkedPhones.has(sPhone)) validCheckedCount++;
+        const pName = (p.name || p.이름 || '').trim();
+        if ((sPhone && checkedPhones.has(sPhone)) || (pName && checkedNames.has(pName))) {
+            validCheckedCount++;
+        }
     });
 
     if (checkedEl) checkedEl.textContent = validCheckedCount;
@@ -298,10 +303,12 @@ export function renderAttendanceList(participants, checkins, sortMode, searchVal
         return;
     }
 
-    const checkedMap = new Map();
+    const checkedPhones = new Set();
+    const checkedNames = new Set();
     checkins.forEach(c => {
         const sPhone = sanitizePhoneNumber(c.phone || '');
-        if (sPhone) checkedMap.set(sPhone, c);
+        if (sPhone) checkedPhones.add(sPhone);
+        if (c.name) checkedNames.add(c.name.trim());
     });
 
     const displayData = participants
@@ -313,7 +320,9 @@ export function renderAttendanceList(participants, checkins, sortMode, searchVal
         })
         .map(p => {
             const sPhone = sanitizePhoneNumber(p.phone || p.휴대전화 || '');
-            return { ...p, sPhone, isChecked: checkedMap.has(sPhone) };
+            const pName = (p.name || p.이름 || '').trim();
+            const isChecked = (sPhone && checkedPhones.has(sPhone)) || (pName && checkedNames.has(pName));
+            return { ...p, sPhone, isChecked };
         });
 
     displayData.sort((a, b) => {
