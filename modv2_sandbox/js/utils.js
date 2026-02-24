@@ -1,9 +1,15 @@
-export function sanitizePhoneNumber(input) {
-    if (!input) return '';
-    let digits = input.replace(/\D/g, '');
-    if (digits.startsWith('82')) digits = digits.substring(2);
-    if (digits.startsWith('010')) digits = digits.substring(1);
-    return digits;
+export function sanitizePhoneNumber(phone) {
+    if (!phone) return '';
+    return phone.replace(/[^0-9]/g, '');
+}
+
+/**
+ * Normalizes strings (especially Hangul) for consistent comparisons
+ * Handles NFC/NFD differences between OSs
+ */
+export function normalizeName(name) {
+    if (!name) return '';
+    return name.trim().normalize('NFC');
 }
 
 export function parseCSVLine(text) {

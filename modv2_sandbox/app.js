@@ -2,7 +2,7 @@ import { auth, db, appId, isConfigured } from './js/config.js';
 import { signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 import { collection, addDoc, setDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 import { fetchParticipants, listenToCheckins, batchUploadParticipants, batchDeleteAll, checkParticipantStatus, fetchMetadata, updateMetadata } from './js/services.js';
-import { sanitizePhoneNumber, parseCSVLine, getSafeHeader, parseCSV } from './js/utils.js';
+import { sanitizePhoneNumber, parseCSVLine, getSafeHeader, parseCSV, normalizeName } from './js/utils.js';
 import * as ui from './js/ui.js';
 import { initSetup } from './js/setup.js';
 
@@ -211,8 +211,8 @@ const handleLookup = () => {
 
             // Perform Search (Case-insensitive)
             let user = PARTICIPANTS.find(u => {
-                const storedName = (u.name || u.이름 || '').trim().toLowerCase();
-                return storedName === nameVal.toLowerCase();
+                const storedName = normalizeName(u.name || u.이름 || '');
+                return storedName.toLowerCase() === normalizeName(nameVal).toLowerCase();
             });
 
             if (!user) {
@@ -248,14 +248,19 @@ const handleLookup = () => {
                 // Logging check-in (deferred)
                 const userName = user.name || user.이름 || '';
                 const sPhone = sanitizePhoneNumber(user.phone || user.휴대전화 || '');
-                const checkInId = `name_${userName.replace(/[\s\W]/g, '')}`;
+                const activityName = user.activity_name || user.액티비티 || user.bus || 'Activity';
+                // Sanitize ID: remove slashes and spaces, but keep Hangul
+                const safeName = userName.replace(/[\s\/]/g, '_');
+                const safeActivity = activityName.replace(/[\s\/]/g, '_');
+                const checkInId = `name_${safeName}_${safeActivity}`;
 
                 if (userName) {
-                    checkParticipantStatus('', userName).then(exists => {
+                    const normName = normalizeName(userName);
+                    checkParticipantStatus('', normName).then(exists => {
                         if (!exists) {
                             const ref = doc(db, 'artifacts', appId, 'public', 'data', 'checkins', checkInId);
                             setDoc(ref, {
-                                name: userName,
+                                name: normName,
                                 phone: sPhone,
                                 activity: user.activity_name || user.액티비티 || user.bus || 'Activity',
                                 department: user.department || user.부서 || '',
@@ -309,7 +314,14 @@ window.submitPassword = () => {
         // Admin Mode: Now we need the full list
         if (!checkinsUnsubscribe) {
             checkinsUnsubscribe = listenToCheckins((data) => {
-                currentCheckins = data;
+                // Sort by checkedInAt desc in JS for safety
+                const sortedData = [...data].sort((a, b) => {
+                    const tA = a.checkedInAt || '';
+                    const tB = b.checkedInAt || '';
+                    return tB.localeCompare(tA);
+                });
+
+                currentCheckins = sortedData;
                 window.currentCheckins = currentCheckins; // Expose for testing
                 const searchVal = document.getElementById('admin-search-input')?.value.toLowerCase().trim() || '';
                 ui.updateAdminDashboard(PARTICIPANTS, currentCheckins, currentSortMode, searchVal);
@@ -388,22 +400,24 @@ window.clearCheckins = async () => {
 
 window.exportFullReport = () => {
     if (PARTICIPANTS.length === 0) { alert('No data'); return; }
-    const checkedMap = new Map();
+    const checkedNames = new Set();
     currentCheckins.forEach(c => {
-        const sPhone = sanitizePhoneNumber(c.phone || '');
-        if (sPhone) checkedMap.set(sPhone, c);
+        if (c.name) checkedNames.add(c.name.trim());
     });
+
     const headers = ['Name', 'Phone', 'Department', 'Activity', 'Status', 'Time'];
     const rows = PARTICIPANTS.map(p => {
-        const sPhone = sanitizePhoneNumber(p.phone || p.휴대전화 || '');
-        const check = checkedMap.get(sPhone);
+        const pName = (p.name || p.이름 || '').trim();
+        const isChecked = pName && checkedNames.has(pName);
+        const checkRecord = isChecked ? currentCheckins.find(c => (c.name || '').trim() === pName) : null;
+
         return [
             p.name || p.이름,
             p.phone || p.휴대전화 || '',
             p.department || p.부서 || '',
             p.activity_name || p.액티비티 || p.bus || '',
-            check ? 'CHECKED-IN' : 'PENDING',
-            check ? new Date(check.checkedInAt).toLocaleString('ko-KR') : '-'
+            isChecked ? 'CHECKED-IN' : 'PENDING',
+            checkRecord ? new Date(checkRecord.checkedInAt).toLocaleString('ko-KR') : '-'
         ];
     });
     const csvContent = [headers, ...rows].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');

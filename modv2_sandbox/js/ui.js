@@ -1,4 +1,4 @@
-import { getStats, sanitizePhoneNumber } from './utils.js';
+import { getStats, sanitizePhoneNumber, normalizeName } from './utils.js';
 
 export function showView(id) {
     ['loading-view', 'admin-view', 'input-view', 'result-view', 'error-view', 'setup-view', 'help-view'].forEach(v => {
@@ -226,12 +226,15 @@ export function updateAdminDashboard(participants, checkins, sortMode, searchVal
     // Calculate Valid Unique Check-ins (Matches List View logic)
     const checkedNames = new Set();
     checkins.forEach(c => {
-        if (c.name) checkedNames.add(c.name.trim());
+        if (c.name) {
+            const norm = normalizeName(c.name);
+            checkedNames.add(norm);
+        }
     });
 
     let validCheckedCount = 0;
     participants.forEach(p => {
-        const pName = (p.name || p.이름 || '').trim();
+        const pName = normalizeName(p.name || p.이름 || '');
         if (pName && checkedNames.has(pName)) {
             validCheckedCount++;
         }
@@ -301,7 +304,10 @@ export function renderAttendanceList(participants, checkins, sortMode, searchVal
 
     const checkedNames = new Set();
     checkins.forEach(c => {
-        if (c.name) checkedNames.add(c.name.trim());
+        if (c.name) {
+            const norm = normalizeName(c.name);
+            checkedNames.add(norm);
+        }
     });
 
     const displayData = participants
@@ -312,7 +318,7 @@ export function renderAttendanceList(participants, checkins, sortMode, searchVal
             return name.includes(searchVal) || phone.includes(searchVal);
         })
         .map(p => {
-            const pName = (p.name || p.이름 || '').trim();
+            const pName = normalizeName(p.name || p.이름 || '');
             const isChecked = pName && checkedNames.has(pName);
             return { ...p, isChecked };
         });

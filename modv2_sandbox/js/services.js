@@ -23,7 +23,7 @@ export async function updateMetadata(data) {
 
 export function listenToCheckins(callback) {
     const checkinsRef = collection(db, 'artifacts', appId, 'public', 'data', 'checkins');
-    const q = query(checkinsRef, orderBy('checkedInAt', 'desc'));
+    const q = query(checkinsRef); // Remove orderBy to ensure all docs are captured regardless of fields
     return onSnapshot(q, (snapshot) => {
         const checkins = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
         callback(checkins);
