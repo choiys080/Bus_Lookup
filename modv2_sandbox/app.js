@@ -2,7 +2,7 @@ import { auth, db, appId, isConfigured } from './js/config.js';
 import { signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 import { collection, addDoc, setDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 import { fetchParticipants, listenToCheckins, batchUploadParticipants, batchDeleteAll, checkParticipantStatus, fetchMetadata, updateMetadata } from './js/services.js';
-import { sanitizePhoneNumber, parseCSVLine, getSafeHeader } from './js/utils.js';
+import { sanitizePhoneNumber, parseCSVLine, getSafeHeader, parseCSV } from './js/utils.js';
 import * as ui from './js/ui.js';
 import { initSetup } from './js/setup.js';
 
@@ -67,9 +67,9 @@ const fetchLocalCSVHeader = async () => {
         const response = await fetch('./participants_data.csv');
         if (!response.ok) return null;
         const text = await response.text();
-        const firstLine = text.split('\n')[0];
-        if (firstLine) {
-            const headers = parseCSVLine(firstLine).map(h => h.trim().replace(/^\uFEFF/, ''));
+        const allRows = parseCSV(text);
+        if (allRows.length > 0) {
+            const headers = allRows[0].map(h => h.trim().replace(/^\uFEFF/, ''));
             // Column D is index 3
             if (headers[3]) {
                 METADATA.activity_header = headers[3];
@@ -422,9 +422,10 @@ if (csvUpload) csvUpload.onchange = async (e) => {
     const reader = new FileReader();
     reader.onload = async (event) => {
         const text = event.target.result;
-        const lines = text.split('\n');
-        const headerLine = lines[0].trim();
-        const headers = parseCSVLine(headerLine).map(h => h.trim().replace(/^\uFEFF/, ''));
+        const allRows = parseCSV(text);
+        if (allRows.length === 0) return;
+
+        const headers = allRows[0].map(h => h.trim().replace(/^\uFEFF/, ''));
         const getIdx = (name) => {
             const idx = headers.findIndex(h => h === name.trim());
             return idx === -1 ? null : idx;
@@ -442,10 +443,9 @@ if (csvUpload) csvUpload.onchange = async (e) => {
         const noticeHeader = headers[16] || '주의사항 (Notice)';
 
         const newData = [];
-        for (let i = 1; i < lines.length; i++) {
-            const line = lines[i].trim();
-            if (!line) continue;
-            const cols = parseCSVLine(line);
+        for (let i = 1; i < allRows.length; i++) {
+            const cols = allRows[i];
+            if (cols.length === 0) continue;
             const p = {
                 // Use the index lookup OR the flexible header lookup
                 name: cols[getIdx('이름')] || cols[0] || '',

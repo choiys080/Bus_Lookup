@@ -19,6 +19,62 @@ export function parseCSVLine(text) {
     return a;
 }
 
+/**
+ * Robust CSV parser that handles quoted strings with newlines and escaped quotes.
+ * Returns an array of rows (arrays of strings).
+ */
+export function parseCSV(text) {
+    const rows = [];
+    let currentRow = [];
+    let currentField = '';
+    let inQuotes = false;
+
+    // Normalizing line endings (CRLF -> LF)
+    const sanitizedText = text.replace(/\r\n/g, '\n');
+
+    for (let i = 0; i < sanitizedText.length; i++) {
+        const char = sanitizedText[i];
+        const nextChar = sanitizedText[i + 1];
+
+        if (inQuotes) {
+            if (char === '"') {
+                if (nextChar === '"') {
+                    // Escaped quote
+                    currentField += '"';
+                    i++;
+                } else {
+                    // End of quoted field
+                    inQuotes = false;
+                }
+            } else {
+                currentField += char;
+            }
+        } else {
+            if (char === '"') {
+                inQuotes = true;
+            } else if (char === ',') {
+                currentRow.push(currentField.trim());
+                currentField = '';
+            } else if (char === '\n') {
+                currentRow.push(currentField.trim());
+                if (currentRow.length > 0) rows.push(currentRow);
+                currentRow = [];
+                currentField = '';
+            } else {
+                currentField += char;
+            }
+        }
+    }
+
+    // Add final field and row if needed
+    if (currentField || currentRow.length > 0) {
+        currentRow.push(currentField.trim());
+        rows.push(currentRow);
+    }
+
+    return rows;
+}
+
 export function chunkArray(array, size) {
     const result = [];
     for (let i = 0; i < array.length; i += size) {
