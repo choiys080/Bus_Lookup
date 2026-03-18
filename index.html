@@ -210,20 +210,20 @@
                     <!-- ACTIVITY SELECTION BAR -->
                     <div
                         class="bg-[#9E2AB5]/90 backdrop-blur-md text-white py-4 px-6 rounded-2xl text-center shadow-lg shadow-[#9E2AB5]/20 mb-6 border border-white/10">
-                        <span class="text-sm font-black uppercase tracking-tight">Day 2 (12-Mar) 선택 Activity</span>
+                        <span class="text-sm font-black uppercase tracking-tight">Day 2 (12-Mar) ?�택 Activity</span>
                     </div>
 
                     <div class="space-y-4">
                         <!-- NAME INPUT (VISUAL ONLY) -->
                         <div class="space-y-2 opacity-60">
                             <label
-                                class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">성명</label>
+                                class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">?�명</label>
                             <div class="relative group">
                                 <div
                                     class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-slate-500">
                                     <i data-lucide="user" class="w-5 h-5"></i>
                                 </div>
-                                <input type="text" id="name-input" placeholder="성명" disabled readonly
+                                <input type="text" id="name-input" placeholder="?�명" disabled readonly
                                     class="w-full pl-12 pr-5 py-4 bg-white/60 backdrop-blur-sm border border-slate-200/50 rounded-2xl outline-none font-bold text-slate-600 cursor-not-allowed shadow-sm">
                             </div>
                         </div>
@@ -231,7 +231,7 @@
                         <!-- PHONE INPUT -->
                         <div class="space-y-2">
                             <label
-                                class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">연락처</label>
+                                class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">?�락�?/label>
                             <div class="flex gap-2">
                                 <!-- Country Code -->
                                 <div class="relative w-24 group">
@@ -256,7 +256,7 @@
 
                         <button onclick="handleLookup()" id="verify-btn"
                             class="w-full bg-[#00A97A]/90 backdrop-blur-sm text-white py-5 rounded-2xl font-black text-lg shadow-xl shadow-[#00A97A]/20 hover:shadow-[#00A97A]/40 hover:-translate-y-0.5 active:translate-y-0 transition-soft flex items-center justify-center gap-3 uppercase tracking-tight mt-6 border border-white/10">
-                            <span>지금 확인하기</span>
+                            <span>지�??�인?�기</span>
                             <i data-lucide="chevron-right" class="w-6 h-6"></i>
                         </button>
                     </div>
@@ -269,7 +269,7 @@
                 <div class="text-center pb-5 border-b border-slate-100 relative">
                     <div class="space-y-2">
                         <h3 class="text-3xl font-black text-black tracking-tight leading-tight"><span id="res-name"
-                                class="text-[#00A97A]">User</span>님</h3>
+                                class="text-[#00A97A]">User</span>??/h3>
                         <div
                             class="inline-flex items-center gap-2 px-3 py-1 bg-slate-50 rounded-full border border-slate-100">
                             <div class="w-1.5 h-1.5 rounded-full bg-[#00A97A] animate-pulse"></div>
@@ -282,7 +282,7 @@
                 <!-- Activity Header Bar -->
                 <div
                     class="bg-[#9E2AB5] text-white py-3 px-8 rounded-2xl text-center shadow-lg shadow-[#9E2AB5]/20 mb-4 relative z-10 mx-4">
-                    <span class="text-sm font-black uppercase tracking-tight">Day 2 (12-Mar) 선택 Activity</span>
+                    <span class="text-sm font-black uppercase tracking-tight">Day 2 (12-Mar) ?�택 Activity</span>
                 </div>
 
                 <!-- Course Title (One Line, Larger, Bold) -->
@@ -407,14 +407,14 @@
                 </div>
             </div>
             <div class="space-y-2">
-                <h2 class="text-2xl font-heading font-black text-slate-900 tracking-tight uppercase">정보를 찾을 수 없습니다
+                <h2 class="text-2xl font-heading font-black text-slate-900 tracking-tight uppercase">?�보�?찾을 ???�습?�다
                 </h2>
                 <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Please Check Your Name &
                     Phone Number</p>
             </div>
             <button onclick="showView('input-view')"
-                class="w-full max-w-[240px] bg-slate-900 text-white font-black py-4 rounded-2xl text-[10px] tracking-[0.2em] uppercase shadow-2xl hover:-translate-y-1 transition-soft">다시
-                시도하기</button>
+                class="w-full max-w-[240px] bg-slate-900 text-white font-black py-4 rounded-2xl text-[10px] tracking-[0.2em] uppercase shadow-2xl hover:-translate-y-1 transition-soft">?�시
+                ?�도?�기</button>
         </div>
     </div>
     </div>
@@ -432,8 +432,10 @@
                     <span class="text-[8px] font-black text-slate-900 uppercase tracking-widest">Activity Portal</span>
                 </div>
             </div>
-            <p class="text-[8px] text-slate-300 font-bold uppercase tracking-widest">© 2026 B. Braun Management
-                Korea</p>
+            <p class="text-[8px] text-slate-300 font-bold uppercase tracking-widest">© 2026 B. Braun Management Korea</p>
+            <div id="deployment-meta" class="mt-2 text-[7px] text-slate-200 font-mono uppercase tracking-tighter opacity-50">
+                REF: <span id="commit-id">0fec208</span> | DATE: <span id="deploy-date">2026-03-18 16:04:38</span>
+            </div>
         </div>
     </div>
     </div>
