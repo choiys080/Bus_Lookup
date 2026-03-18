@@ -40,15 +40,9 @@ onAuthStateChanged(auth, async (user) => {
     if (user) {
         currentUser = user;
         const loadingMsg = document.querySelector('#loading-view p.animate-pulse');
-        if (loadingMsg) loadingMsg.textContent = "Loading Participant Data...";
-        try {
-            PARTICIPANTS = await fetchParticipants();
-            window.PARTICIPANTS = PARTICIPANTS; // Expose for testing
-            console.log(`System: Loaded ${PARTICIPANTS.length} participants.`);
-            ui.showView('input-view');
-        } catch (err) {
-            ui.showConnectionError("데이터 연결 실패: " + err.message);
-        }
+        // We no longer fetch all participants on load to prevent data leakage.
+        if (loadingMsg) loadingMsg.textContent = "Ready.";
+        ui.showView('input-view');
     }
 });
 
@@ -57,50 +51,29 @@ window.showView = ui.showView;
 
 window.handleLookup = async () => {
     const phoneInput = document.getElementById('phone-input')?.value;
-    const countryCodeInput = document.getElementById('country-code-input')?.value;
+    const countryCodeInput = document.getElementById('country-code-input')?.value || '82';
 
     if (!phoneInput) { alert("연락처를 입력해주세요."); return; }
 
     const combinedPhone = countryCodeInput + phoneInput;
     const sanitizedPhone = sanitizePhoneNumber(combinedPhone);
 
-    // 1. Try finding them in current memory (Matching by Phone ONLY)
-    let user = PARTICIPANTS.find(u => {
-        const storedPhone = sanitizePhoneNumber(u.phone || u.휴대전화 || '');
-        return storedPhone === sanitizedPhone;
-    });
+    const btn = document.getElementById('verify-btn');
+    const originalText = btn ? btn.innerHTML : '';
+    if (btn) btn.innerHTML = '<span class="animate-spin">↻</span> Searching...';
 
-    // 2. THE FIX: If not found, fetch fresh data and try again
-    if (!user) {
-        // Show a temporary loading state on the button
-        const btn = document.getElementById('verify-btn');
-        const originalText = btn ? btn.innerHTML : '';
-        if (btn) btn.innerHTML = '<span class="animate-spin">↻</span> Checking Server...';
+    try {
+        // Fetch ONLY this participant from the server
+        console.log("Searching for participant...");
+        const results = await fetchParticipants(sanitizedPhone);
+        const user = results[0];
 
-        try {
-            console.log("User not found locally. Fetching fresh data...");
-            PARTICIPANTS = await fetchParticipants();
+        if (user) {
+            ui.renderResult(user, '');
 
-            // Try finding them again in the fresh list
-            user = PARTICIPANTS.find(u => {
-                const storedPhone = sanitizePhoneNumber(u.phone || u.휴대전화 || '');
-                return storedPhone === sanitizedPhone;
-            });
-        } catch (e) {
-            console.error("Emergency fetch failed", e);
-        } finally {
-            if (btn) btn.innerHTML = originalText;
-        }
-    }
-
-    if (user) {
-        ui.renderResult(user, '');
-
-        // Optimized Check: Query DB specifically for this user
-        const isAlreadyCheckedIn = await checkParticipantStatus(sanitizedPhone);
-
-        if (!isAlreadyCheckedIn) {
-            try {
+            // Check-in logic
+            const isAlreadyCheckedIn = await checkParticipantStatus(sanitizedPhone);
+            if (!isAlreadyCheckedIn) {
                 const checkinDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'checkins', sanitizedPhone);
                 await setDoc(checkinDocRef, {
                     name: user.name || user.이름 || '',
@@ -109,11 +82,16 @@ window.handleLookup = async () => {
                     department: user.department || user.부서 || '',
                     checkedInAt: new Date().toISOString()
                 });
-            } catch (e) { console.error("Checkin log failed", e); }
+            }
+            ui.showView('result-view');
+        } else {
+            ui.showView('error-view');
         }
-        ui.showView('result-view');
-    } else {
-        ui.showView('error-view');
+    } catch (e) {
+        console.error("Lookup failed", e);
+        ui.showConnectionError("Search Error. Please try again.");
+    } finally {
+        if (btn) btn.innerHTML = originalText;
     }
 };
 
@@ -142,27 +120,35 @@ window.toggleAdmin = () => {
     }
 };
 
-window.submitPassword = () => {
+window.submitPassword = async () => {
     const password = document.getElementById('password-input')?.value;
-    if (password === 'admin123') {
-        document.getElementById('password-modal')?.classList.add('hidden');
-        document.getElementById('password-error')?.classList.add('hidden');
-        ui.showView('admin-view');
-        // Admin Mode: Now we need the full list
-        if (!checkinsUnsubscribe) {
-            checkinsUnsubscribe = listenToCheckins((data) => {
-                currentCheckins = data;
-                window.currentCheckins = currentCheckins; // Expose for testing
-                const searchVal = document.getElementById('admin-search-input')?.value.toLowerCase().trim() || '';
-                ui.updateAdminDashboard(PARTICIPANTS, currentCheckins, currentSortMode, searchVal);
-            });
-        }
+    const errorEl = document.getElementById('password-error');
 
-        // Initial render (might be empty initially until callback fires)
-        const searchVal = document.getElementById('admin-search-input')?.value.toLowerCase().trim() || '';
-        ui.updateAdminDashboard(PARTICIPANTS, currentCheckins, currentSortMode, searchVal);
-    } else {
-        document.getElementById('password-error')?.classList.remove('hidden');
+    try {
+        const { verifyAdmin } = await import('./js/services.js');
+        const isValid = await verifyAdmin(password);
+
+        if (isValid) {
+            document.getElementById('password-modal')?.classList.add('hidden');
+            errorEl?.classList.add('hidden');
+            ui.showView('admin-view');
+
+            // Admin Mode: Load data only after verification
+            PARTICIPANTS = await fetchParticipants();
+            
+            if (!checkinsUnsubscribe) {
+                checkinsUnsubscribe = listenToCheckins((data) => {
+                    currentCheckins = data;
+                    ui.updateAdminDashboard(PARTICIPANTS, currentCheckins, currentSortMode, '');
+                });
+            }
+            ui.updateAdminDashboard(PARTICIPANTS, currentCheckins, currentSortMode, '');
+        } else {
+            errorEl?.classList.remove('hidden');
+        }
+    } catch (e) {
+        console.error("Admin verification failed", e);
+        errorEl?.classList.remove('hidden');
     }
 };
 
@@ -285,13 +271,14 @@ if (csvUpload) csvUpload.onchange = async (e) => {
                 department: cols[getIdx('부서')] || cols[1] || '',
                 phone: sanitizePhoneNumber(cols[getIdx('휴대전화')] || cols[2] || ''),
                 activity_name: cols[getIdx('액티비티')] || cols[3] || '',
+                bus: cols[getIdx('액티비티')] || cols[3] || '', // Add 'bus' for legacy support/stats
                 start_time: cols[getIdx('출발시간')] || cols[4] || '',
                 meeting_point: cols[getIdx('집합장소')] || cols[5] || '',
                 guide_info: cols[getIdx('가이드 정보')] || cols[6] || '',
                 // Flexible matching for schedules
-                schedule_1: cols[getIdx('일정 1')] || cols[getIdx('일정1')] || cols[7] || '',
-                schedule_2: cols[getIdx('일정 2')] || cols[getIdx('일정2')] || cols[8] || '',
-                schedule_3: cols[getIdx('일정 3')] || cols[9] || '',
+                schedule_1: cols[getIdx('코스 요약')] || cols[getIdx('일정 1')] || cols[getIdx('일정1')] || cols[7] || '',
+                schedule_2: cols[getIdx('듀레이션')] || cols[getIdx('일정 2')] || cols[getIdx('일정2')] || cols[8] || '',
+                schedule_3: cols[getIdx('타임')] || cols[getIdx('일정 3')] || cols[9] || '',
                 supplies: cols[getIdx('준비물')] || cols[10] || '',
                 notice: cols[getIdx('주의사항')] || cols[11] || ''
             };
